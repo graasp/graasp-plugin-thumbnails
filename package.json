@@ -1,0 +1,23 @@
+{
+  "name": "graasp-plugin-thumbnails",
+  "version": "0.1.0",
+  "description": "Thumbnails fastify plugin for Graasp",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graasp/graasp-plugin-thumbnails.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/graasp/graasp-plugin-thumbnails/issues"
+  },
+  "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  }
+}
