@@ -21,10 +21,12 @@
   },
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
+    "content-disposition": "0.5.3",
     "fastify-multipart": "4.0.0",
     "sharp": "0.29.1"
   },
   "devDependencies": {
+    "@types/content-disposition": "0.5.4",
     "@types/graasp": "github:graasp/graasp-types",
     "@types/node": "16.11.1",
     "@types/sharp": "0.29.2",
