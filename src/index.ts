@@ -63,34 +63,23 @@ const plugin: FastifyPluginAsync<GraaspFileItemOptions> = async (
 
           try {
             // Save path to item and mimetype
-            const updateTask = taskManager.createUpdateTaskSequence(member, id, {
-              settings: {
-                ...item.settings,
-                thumbnail:{
-                  path: path,
-                  mimetype: data.mimetype
-                }
-              }
-            });
+            const updateTask = taskManager.createUpdateTaskSequence(member, id, item);
             runner.runSingleSequence(updateTask, log);
 
             const imageBuffer = await data.toBuffer();
 
-            // save original and resized images as with name corresponding to their sizes
-            const original = sharp(imageBuffer).toFile(`${storageFilepath}/original`);
+            // save resized images as with name corresponding to their sizes
             const small = sharp(imageBuffer).resize({ width: 200 }).toFile(`${storageFilepath}/small`);
             const medium = sharp(imageBuffer).resize({ width: 400 }).toFile(`${storageFilepath}/medium`);
             const large = sharp(imageBuffer).resize({ width: 600 }).toFile(`${storageFilepath}/large`);
 
-            Promise.all([small, medium, large, original]);
+            Promise.all([small, medium, large]);
           } catch (error) {
-            // unlink created files
-            const original = unlink(`${storageFilepath}/original`);
-            const small = unlink(`${storageFilepath}/small`);
-            const medium = unlink(`${storageFilepath}/medium`);
-            const large = unlink(`${storageFilepath}/large`);
-            Promise.all([small, medium, large, original]);
-
+            // created files
+            const small = await unlink(`${storageFilepath}/small`);
+            const medium = await unlink(`${storageFilepath}/medium`);
+            const large = await unlink(`${storageFilepath}/large`);
+            Promise.all([small, medium, large]);
             throw error;
           }
 
