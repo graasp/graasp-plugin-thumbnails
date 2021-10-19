@@ -1,35 +1,44 @@
+import { createHash } from 'crypto';
 import contentDisposition from 'content-disposition';
 import { FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import fs from 'fs';
-import { mkdir, unlink } from 'fs/promises';
-import { IdParam, UnknownExtra, Item } from 'graasp';
+import fetch from 'node-fetch';
+import { mkdir } from 'fs/promises';
+import { IdParam } from 'graasp';
+import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
+import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import sharp from 'sharp';
 
 import { upload, download } from './schema';
+import { s3Instance } from './s3Instance';
 
 const ROUTES_PREFIX = '/thumbnails';
-const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 250; // 250MB
+const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 
-const randomHexOf4 = () =>
-  ((Math.random() * (1 << 16)) | 0).toString(16).padStart(4, '0');
+const hash = (id: string) => createHash('sha256').update(id).digest('hex');
 
-export interface GraaspFileItemOptions {
-  /**
-   * Filesystem root path where the uploaded files will be saved
-   */
-  storageRootPath: string;
+declare module 'fastify' {
+  interface FastifyInstance {
+    s3FileItemPluginOptions?: GraaspS3FileItemOptions;
+    fileItemPluginOptions?: GraaspFileItemOptions;
+  }
 }
 
-const plugin: FastifyPluginAsync<GraaspFileItemOptions> = async (
+export interface GraaspThumbnailsOptions {
+  enableS3FileItemPlugin?: boolean;
+}
+
+const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
   const {
-    items: { taskManager },
     taskRunner: runner,
+    itemMemberships: { taskManager: membership },
   } = fastify;
-  const { storageRootPath } = options;
+
+  const { enableS3FileItemPlugin } = options;
 
   fastify.register(
     async function (fastify) {
@@ -44,64 +53,109 @@ const plugin: FastifyPluginAsync<GraaspFileItemOptions> = async (
         },
       });
 
+      const { storageRootPath } = fastify.fileItemPluginOptions;
+
       fastify.post<{ Params: IdParam }>(
         '/:id/upload',
         { schema: upload },
         async (request, reply) => {
           const data = await request.file();
-          const { member, params: { id }, log } = request;
+          const {
+            member,
+            params: { id },
+            log,
+          } = request;
 
-          const getItem = taskManager.createGetTaskSequence(member, id);
-          const item = (await runner.runSingleSequence(getItem, log)) as Item<UnknownExtra>;
+          const tasks = membership.createGetOfItemTaskSequence(member, id);
+          tasks[1].input = { validatePermission: 'write' };
+          await runner.runSingleSequence(tasks, log);
 
-          const path = `${randomHexOf4()}/${randomHexOf4()}`;
+          const imageBuffer = await data.toBuffer();
+          const original = sharp(imageBuffer).toFormat('jpeg');
+          const small = sharp(imageBuffer)
+            .resize({ width: 200 })
+            .toFormat('jpeg');
+          const medium = sharp(imageBuffer)
+            .resize({ width: 400 })
+            .toFormat('jpeg');
+          const large = sharp(imageBuffer)
+            .resize({ width: 600 })
+            .toFormat('jpeg');
 
-          // validate edition of item and add thumbnail path
-          // create directories path, 1 folder per item with all sizes
-          const storageFilepath = `${storageRootPath}/${path}`;
-          await mkdir(`${storageFilepath}`, { recursive: true });
+          const sizes = [
+            { size: 'small', image: small },
+            { size: 'medium', image: medium },
+            { size: 'large', image: large },
+            { size: 'original', image: original },
+          ];
 
-          try {
-            // Save path to item and mimetype
-            const updateTask = taskManager.createUpdateTaskSequence(member, id, item);
-            runner.runSingleSequence(updateTask, log);
+          if (enableS3FileItemPlugin) {
+            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
 
-            const imageBuffer = await data.toBuffer();
+            await Promise.all(sizes.map(async ({ size, image }) => {
+              const url = await s3instance.getSignedUrl(`${hash(id)}/${size}`, {
+                member: member.id,
+                item: id,
+              });
+              console.log(url);
+              const buffer = await image.toBuffer();
+              await fetch(url, { // Your POST endpoint
+                method: 'PUT',
+                body: buffer // This is your file object
+              });
+            }));
+          } else {
+            // validate edition of item and add thumbnail path
+            // create directories path, 1 folder per item with all sizes
+            const storageFilepath = `${storageRootPath}/${hash(id)}`;
+            await mkdir(`${storageFilepath}`, { recursive: true });
 
-            // save resized images as with name corresponding to their sizes
-            const small = sharp(imageBuffer).resize({ width: 200 }).toFile(`${storageFilepath}/small`);
-            const medium = sharp(imageBuffer).resize({ width: 400 }).toFile(`${storageFilepath}/medium`);
-            const large = sharp(imageBuffer).resize({ width: 600 }).toFile(`${storageFilepath}/large`);
-
-            Promise.all([small, medium, large]);
-          } catch (error) {
-            // created files
-            const small = await unlink(`${storageFilepath}/small`);
-            const medium = await unlink(`${storageFilepath}/medium`);
-            const large = await unlink(`${storageFilepath}/large`);
-            Promise.all([small, medium, large]);
-            throw error;
+            // save original and resized images as with name corresponding to their sizes
+            await Promise.all(
+              sizes.map(({ size, image }) =>
+                image.toFile(`${storageFilepath}/${size}`),
+              ),
+            );
           }
 
           reply.send();
         },
       );
 
-      fastify.get<{ Params: IdParam, Querystring: { size: string } }>(
+      fastify.get<{ Params: IdParam; Querystring: { size: string } }>(
         '/:id/download',
         { schema: download },
         async (request, reply) => {
-          const { member, params: { id }, query: { size }, log } = request;
+          const {
+            member,
+            params: { id },
+            query: { size },
+            log,
+          } = request;
 
-          const getItem = taskManager.createGetTaskSequence(member, id);
-          const { settings: { thumbnail: { path, mimetype }}} = await runner.runSingleSequence(getItem, log) as Item<UnknownExtra>;
+          // Ensures the member has at least read permissions
+          const tasks = membership.createGetOfItemTaskSequence(member, id);
+          tasks[1].input = { validatePermission: 'read' };
+          await runner.runSingleSequence(tasks, log);
 
-          // Get thumbnail path
-          reply.type(mimetype);
-          // this header will make the browser download the file with 'name' instead of
-          // simply opening it and showing it
-          reply.header('Content-Disposition', contentDisposition(`thumb-id-${size}`));
-          return fs.createReadStream(`${storageRootPath}/${path}/${size}`);
+          if (enableS3FileItemPlugin) {
+            const key = `${hash(id)}/${size}`;
+            reply.send({ key }).status(200);
+          } else {
+            const { storageRootPath } = fastify.fileItemPluginOptions;
+
+            // Get thumbnail path
+            reply.type('image/jpeg');
+            // this header will make the browser download the file with 'name' instead of
+            // simply opening it and showing it
+            reply.header(
+              'Content-Disposition',
+              contentDisposition(`thumb-id-${size}`),
+            );
+            return fs.createReadStream(
+              `${storageRootPath}/${hash(id)}/${size}`,
+            );
+          }
         },
       );
     },

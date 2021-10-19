@@ -23,6 +23,9 @@
   "dependencies": {
     "content-disposition": "0.5.3",
     "fastify-multipart": "4.0.0",
+    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
+    "graasp-plugin-s3-file-item": "git://github.com/graasp/graasp-s3-file-item.git#master",
+    "node-fetch": "2.6.5",
     "sharp": "0.29.1"
   },
   "devDependencies": {
