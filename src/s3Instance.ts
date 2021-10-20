@@ -58,4 +58,33 @@ export class s3Instance {
       throw error;
     }
   }
+
+  async copyObject(
+    originalKey: string,
+    newKey: string,
+    metadata: { member: string; item: string },
+  ): Promise<void> {
+    const { s3Bucket: bucket } = this.options;
+
+    const params: S3.CopyObjectRequest = {
+      CopySource: `${bucket}/${originalKey}`,
+      Bucket: bucket,
+      Key: newKey,
+      Metadata: metadata,
+      MetadataDirective: 'REPLACE',
+      ContentDisposition: `attachment; filename="${name}"`,
+      ContentType: 'image/jpeg',
+      CacheControl: 'no-cache', // TODO: improve?
+    };
+
+    // TODO: the Cache-Control policy metadata is lost. try to set a global policy for the bucket in aws.
+    await this.s3Instance.copyObject(params).promise();
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    const { s3Bucket: bucket } = this.options;
+
+    const params: S3.HeadObjectRequest = { Bucket: bucket, Key: key };
+    await this.s3Instance.deleteObject(params).promise();
+  }
 }

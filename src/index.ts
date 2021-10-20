@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import fs from 'fs';
 import fetch from 'node-fetch';
-import { mkdir } from 'fs/promises';
+import { mkdir, rm, copyFile } from 'fs/promises';
 import { IdParam } from 'graasp';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
 import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
@@ -34,6 +34,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   options,
 ) => {
   const {
+    items: { taskManager: item },
     taskRunner: runner,
     itemMemberships: { taskManager: membership },
   } = fastify;
@@ -54,6 +55,66 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       });
 
       const { storageRootPath } = fastify.fileItemPluginOptions;
+
+      // register post delete handler to erase the file
+      const deleteItemTaskName = item.getDeleteTaskName();
+      runner.setTaskPostHookHandler(
+        deleteItemTaskName,
+        async ({ id }, _actor, { log }) => {
+          if (enableS3FileItemPlugin) {
+            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
+
+            await Promise.all(
+              ['small', 'medium', 'large', 'original'].map((size) =>
+                s3instance.deleteObject(`${hash(id)}/${size}`),
+              ),
+            );
+          } else {
+            rm(`${storageRootPath}/${hash(id)}`, { recursive: true }).catch(
+              function (error) {
+                log.error(error);
+              },
+            );
+          }
+        },
+      );
+
+      // register pre copy handler to make a copy of the 'file item's file
+      const copyItemTaskName = item.getCopyTaskName();
+      runner.setTaskPostHookHandler(
+        copyItemTaskName,
+        async ({ id }, actor, { log }, { original }) => {
+          if (enableS3FileItemPlugin) {
+            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
+
+            await Promise.all(
+              ['small', 'medium', 'large', 'original'].map((size) =>
+                s3instance.copyObject(
+                  `${hash(original.id)}/${size}`,
+                  `${hash(id)}/${size}`,
+                  {
+                    member: actor.id,
+                    item: id,
+                  },
+                ),
+              ),
+            );
+          } else {
+            const originalPath = `${storageRootPath}/${hash(original.id)}`;
+            const newPath = `${storageRootPath}/${hash(id)}`;
+
+            await Promise.all(
+              ['small', 'medium', 'large', 'original'].map((size) =>
+                copyFile(`${originalPath}/${size}`, `${newPath}/${size}`).catch(
+                  function (error) {
+                    log.error(error);
+                  },
+                ),
+              ),
+            );
+          }
+        },
+      );
 
       fastify.post<{ Params: IdParam }>(
         '/:id/upload',
@@ -92,18 +153,24 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           if (enableS3FileItemPlugin) {
             const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
 
-            await Promise.all(sizes.map(async ({ size, image }) => {
-              const url = await s3instance.getSignedUrl(`${hash(id)}/${size}`, {
-                member: member.id,
-                item: id,
-              });
-              console.log(url);
-              const buffer = await image.toBuffer();
-              await fetch(url, { // Your POST endpoint
-                method: 'PUT',
-                body: buffer // This is your file object
-              });
-            }));
+            await Promise.all(
+              sizes.map(async ({ size, image }) => {
+                const url = await s3instance.getSignedUrl(
+                  `${hash(id)}/${size}`,
+                  {
+                    member: member.id,
+                    item: id,
+                  },
+                );
+                console.log(url);
+                const buffer = await image.toBuffer();
+                await fetch(url, {
+                  // Your POST endpoint
+                  method: 'PUT',
+                  body: buffer, // This is your file object
+                });
+              }),
+            );
           } else {
             // validate edition of item and add thumbnail path
             // create directories path, 1 folder per item with all sizes
