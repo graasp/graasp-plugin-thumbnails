@@ -1,3 +1,5 @@
+import { sizes } from './utils/constants';
+
 const upload = {
   querystring: {
     type: 'object',
@@ -14,7 +16,7 @@ const download = {
     type: 'object',
     properties: {
       size: {
-        enum: ['small', 'medium', 'large', 'original'],
+        enum: sizes,
       },
     },
     required: ['size'],

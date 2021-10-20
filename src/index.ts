@@ -1,4 +1,3 @@
-import { createHash } from 'crypto';
 import contentDisposition from 'content-disposition';
 import { FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
@@ -12,11 +11,11 @@ import sharp from 'sharp';
 
 import { upload, download } from './schema';
 import { s3Instance } from './s3Instance';
+import { createFsKey, createS3Key, createFsFolder } from './utils/helpers';
+import { sizes } from './utils/constants';
 
 const ROUTES_PREFIX = '/thumbnails';
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
-
-const hash = (id: string) => createHash('sha256').update(id).digest('hex');
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -55,29 +54,19 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       });
 
       const { storageRootPath } = fastify.fileItemPluginOptions;
+      const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
 
       // register post delete handler to erase the file
       const deleteItemTaskName = item.getDeleteTaskName();
-      runner.setTaskPostHookHandler(
-        deleteItemTaskName,
-        async ({ id }, _actor, { log }) => {
-          if (enableS3FileItemPlugin) {
-            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
-
-            await Promise.all(
-              ['small', 'medium', 'large', 'original'].map((size) =>
-                s3instance.deleteObject(`${hash(id)}/${size}`),
-              ),
-            );
-          } else {
-            rm(`${storageRootPath}/${hash(id)}`, { recursive: true }).catch(
-              function (error) {
-                log.error(error);
-              },
-            );
-          }
-        },
-      );
+      runner.setTaskPostHookHandler(deleteItemTaskName, async ({ id }) => {
+        if (enableS3FileItemPlugin) {
+          await Promise.all(
+            sizes.map((size) => s3instance.deleteObject(createS3Key(id, size))),
+          );
+        } else {
+          await rm(createFsFolder(storageRootPath, id), { recursive: true });
+        }
+      });
 
       // register pre copy handler to make a copy of the 'file item's file
       const copyItemTaskName = item.getCopyTaskName();
@@ -85,13 +74,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         copyItemTaskName,
         async ({ id }, actor, { log }, { original }) => {
           if (enableS3FileItemPlugin) {
-            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
-
             await Promise.all(
-              ['small', 'medium', 'large', 'original'].map((size) =>
+              sizes.map((size) =>
                 s3instance.copyObject(
-                  `${hash(original.id)}/${size}`,
-                  `${hash(id)}/${size}`,
+                  createS3Key(original.id, size),
+                  createS3Key(id, size),
                   {
                     member: actor.id,
                     item: id,
@@ -100,15 +87,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               ),
             );
           } else {
-            const originalPath = `${storageRootPath}/${hash(original.id)}`;
-            const newPath = `${storageRootPath}/${hash(id)}`;
-
             await Promise.all(
-              ['small', 'medium', 'large', 'original'].map((size) =>
-                copyFile(`${originalPath}/${size}`, `${newPath}/${size}`).catch(
-                  function (error) {
-                    log.error(error);
-                  },
+              sizes.map((size) =>
+                copyFile(
+                  `${storageRootPath}/${createFsKey(original.id, size)}`,
+                  `${storageRootPath}/${createFsKey(id, size)}`,
                 ),
               ),
             );
@@ -143,7 +126,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             .resize({ width: 600 })
             .toFormat('jpeg');
 
-          const sizes = [
+          const files = [
             { size: 'small', image: small },
             { size: 'medium', image: medium },
             { size: 'large', image: large },
@@ -151,12 +134,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           ];
 
           if (enableS3FileItemPlugin) {
-            const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
-
             await Promise.all(
-              sizes.map(async ({ size, image }) => {
+              files.map(async ({ size, image }) => {
                 const url = await s3instance.getSignedUrl(
-                  `${hash(id)}/${size}`,
+                  createS3Key(id, size),
                   {
                     member: member.id,
                     item: id,
@@ -174,13 +155,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           } else {
             // validate edition of item and add thumbnail path
             // create directories path, 1 folder per item with all sizes
-            const storageFilepath = `${storageRootPath}/${hash(id)}`;
-            await mkdir(`${storageFilepath}`, { recursive: true });
+            await mkdir(createFsFolder(storageRootPath, id), {
+              recursive: true,
+            });
 
             // save original and resized images as with name corresponding to their sizes
             await Promise.all(
-              sizes.map(({ size, image }) =>
-                image.toFile(`${storageFilepath}/${size}`),
+              files.map(({ size, image }) =>
+                image.toFile(`${storageRootPath}/${createFsKey(id, size)}`),
               ),
             );
           }
@@ -206,21 +188,18 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           await runner.runSingleSequence(tasks, log);
 
           if (enableS3FileItemPlugin) {
-            const key = `${hash(id)}/${size}`;
-            reply.send({ key }).status(200);
+            reply.send({ key: createS3Key(id, size) }).status(200);
           } else {
-            const { storageRootPath } = fastify.fileItemPluginOptions;
-
             // Get thumbnail path
             reply.type('image/jpeg');
             // this header will make the browser download the file with 'name' instead of
             // simply opening it and showing it
             reply.header(
               'Content-Disposition',
-              contentDisposition(`thumb-id-${size}`),
+              contentDisposition(`thumb-${id}-${size}`),
             );
             return fs.createReadStream(
-              `${storageRootPath}/${hash(id)}/${size}`,
+              `${storageRootPath}/${createFsKey(id, size)}`,
             );
           }
         },
