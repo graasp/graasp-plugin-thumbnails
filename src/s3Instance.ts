@@ -25,40 +25,6 @@ export class s3Instance {
       });
   }
 
-  async getSignedUrl(
-    key: string,
-    metadata: { member: string; item: string },
-  ): Promise<string> {
-    const {
-      s3Bucket: bucket,
-      s3Expiration: expiration = 60, // 1 minute,
-    } = this.options;
-
-    const params = {
-      Bucket: bucket,
-      Key: key,
-      Expires: expiration,
-      Metadata: metadata,
-      // currently does not work. more info here: https://github.com/aws/aws-sdk-js/issues/1703
-      // the workaround is to do the upload (PUT) from the client with this request header.
-      // ContentDisposition: `attachment; filename="<filename>"`
-      // also does not work. should the client always send it when uploading the file?
-      // CacheControl: 'no-cache'
-    };
-
-    // request s3 signed url to upload file
-    try {
-      const uploadUrl = await this.s3Instance.getSignedUrlPromise(
-        'putObject',
-        params,
-      );
-      return uploadUrl;
-    } catch (error) {
-      // log.error(error, 'graasp-s3-file-item: failed to get signed url for upload');
-      throw error;
-    }
-  }
-
   async copyObject(
     originalKey: string,
     newKey: string,
@@ -66,13 +32,13 @@ export class s3Instance {
   ): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params: S3.CopyObjectRequest = {
+    const params = {
       CopySource: `${bucket}/${originalKey}`,
       Bucket: bucket,
       Key: newKey,
       Metadata: metadata,
       MetadataDirective: 'REPLACE',
-      ContentDisposition: `attachment; filename="${name}"`,
+      ContentDisposition: `attachment; filename="tumb-${metadata.item}"`,
       ContentType: 'image/jpeg',
       CacheControl: 'no-cache', // TODO: improve?
     };
@@ -84,7 +50,26 @@ export class s3Instance {
   async deleteObject(key: string): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params: S3.HeadObjectRequest = { Bucket: bucket, Key: key };
+    const params = { Bucket: bucket, Key: key };
     await this.s3Instance.deleteObject(params).promise();
+  }
+
+  async putObject(
+    key: string,
+    object: Buffer,
+    metadata: { member: string; item: string },
+  ): Promise<void> {
+    const { s3Bucket: bucket } = this.options;
+
+    const params = {
+      Bucket: bucket,
+      Key: key,
+      Metadata: metadata,
+      Body: object,
+      ContentType: 'image/jpeg',
+      CacheControl: 'no-cache', // TODO: improve?
+    };
+
+    await this.s3Instance.putObject(params).promise();
   }
 }

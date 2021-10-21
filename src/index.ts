@@ -2,7 +2,6 @@ import contentDisposition from 'content-disposition';
 import { FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import fs from 'fs';
-import fetch from 'node-fetch';
 import { mkdir, rm, copyFile } from 'fs/promises';
 import { IdParam } from 'graasp';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
@@ -58,15 +57,24 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
       // register post delete handler to erase the file
       const deleteItemTaskName = item.getDeleteTaskName();
-      runner.setTaskPostHookHandler(deleteItemTaskName, async ({ id }) => {
-        if (enableS3FileItemPlugin) {
-          await Promise.all(
-            sizes.map((size) => s3instance.deleteObject(createS3Key(id, size))),
-          );
-        } else {
-          await rm(createFsFolder(storageRootPath, id), { recursive: true });
-        }
-      });
+      runner.setTaskPostHookHandler(
+        deleteItemTaskName,
+        async ({ id }, _actor, { log }) => {
+          if (enableS3FileItemPlugin) {
+            await Promise.all(
+              sizes.map((size) =>
+                s3instance
+                  .deleteObject(createS3Key(id, size))
+                  .catch(function (error) {
+                    log.error(error);
+                  }),
+              ),
+            );
+          } else {
+            await rm(createFsFolder(storageRootPath, id), { recursive: true });
+          }
+        },
+      );
 
       // register pre copy handler to make a copy of the 'file item's file
       const copyItemTaskName = item.getCopyTaskName();
@@ -76,14 +84,18 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           if (enableS3FileItemPlugin) {
             await Promise.all(
               sizes.map((size) =>
-                s3instance.copyObject(
-                  createS3Key(original.id, size),
-                  createS3Key(id, size),
-                  {
-                    member: actor.id,
-                    item: id,
-                  },
-                ),
+                s3instance
+                  .copyObject(
+                    createS3Key(original.id, size),
+                    createS3Key(id, size),
+                    {
+                      member: actor.id,
+                      item: id,
+                    },
+                  )
+                  .catch(function (error) {
+                    log.error(error);
+                  }),
               ),
             );
           } else {
@@ -134,24 +146,20 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           ];
 
           if (enableS3FileItemPlugin) {
-            await Promise.all(
+            await Promise.allSettled(
               files.map(async ({ size, image }) => {
-                const url = await s3instance.getSignedUrl(
-                  createS3Key(id, size),
-                  {
+                s3instance
+                  .putObject(createS3Key(id, size), await image.toBuffer(), {
                     member: member.id,
                     item: id,
-                  },
-                );
-                console.log(url);
-                const buffer = await image.toBuffer();
-                await fetch(url, {
-                  // Your POST endpoint
-                  method: 'PUT',
-                  body: buffer, // This is your file object
-                });
+                  })
+                  .catch(function (error) {
+                    log.error(error);
+                  });
               }),
             );
+
+            reply.status(200);
           } else {
             // validate edition of item and add thumbnail path
             // create directories path, 1 folder per item with all sizes
@@ -165,9 +173,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
                 image.toFile(`${storageRootPath}/${createFsKey(id, size)}`),
               ),
             );
+            reply.send(204);
           }
-
-          reply.send();
         },
       );
 
@@ -193,7 +200,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             // Get thumbnail path
             reply.type('image/jpeg');
             // this header will make the browser download the file with 'name' instead of
-            // simply opening it and showing it
+            // simply opening it and showing itgi
             reply.header(
               'Content-Disposition',
               contentDisposition(`thumb-${id}-${size}`),
