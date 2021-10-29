@@ -1,7 +1,11 @@
 import S3 from 'aws-sdk/clients/s3';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
+import { Sharp } from 'sharp';
+import FileOperations from './FileOperations';
+import { sizes_names } from '../utils/constants';
+import { createS3Key } from '../utils/helpers';
 
-export class s3Instance {
+export class s3Provider implements FileOperations {
   private readonly options: GraaspS3FileItemOptions;
   private readonly s3Instance: S3;
 
@@ -26,19 +30,23 @@ export class s3Instance {
   }
 
   async copyObject(
-    originalKey: string,
-    newKey: string,
-    metadata: { member: string; item: string },
+    originalId: string,
+    newId: string,
+    size: string,
+    memberId: string,
   ): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
-      CopySource: `${bucket}/${originalKey}`,
+      CopySource: `${bucket}/${createS3Key(originalId, size)}`,
       Bucket: bucket,
-      Key: newKey,
-      Metadata: metadata,
+      Key: createS3Key(newId, size),
+      Metadata: {
+        member: memberId,
+        item: newId,
+      },
       MetadataDirective: 'REPLACE',
-      ContentDisposition: `attachment; filename="tumb-${metadata.item}"`,
+      ContentDisposition: `attachment; filename="tumb-${newId}"`,
       ContentType: 'image/jpeg',
       CacheControl: 'no-cache', // TODO: improve?
     };
@@ -47,25 +55,34 @@ export class s3Instance {
     await this.s3Instance.copyObject(params).promise();
   }
 
-  async deleteObject(key: string): Promise<void> {
+  async deleteItem(id: string): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
-    const params = { Bucket: bucket, Key: key };
-    await this.s3Instance.deleteObject(params).promise();
+    await Promise.all(
+      sizes_names.map((size) =>
+        this.s3Instance
+          .deleteObject({ Bucket: bucket, Key: createS3Key(id, size) })
+          .promise(),
+      ),
+    );
   }
 
   async putObject(
-    key: string,
-    object: Buffer,
-    metadata: { member: string; item: string },
+    id: string,
+    object: Sharp,
+    memberId: string,
+    size: string,
   ): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
       Bucket: bucket,
-      Key: key,
-      Metadata: metadata,
-      Body: object,
+      Key: createS3Key(id, size),
+      Metadata: {
+        member: memberId,
+        item: id,
+      },
+      Body: await object.toBuffer(),
       ContentType: 'image/jpeg',
       CacheControl: 'no-cache', // TODO: improve?
     };
