@@ -6,7 +6,7 @@ import {
   TaskRunner,
 } from 'graasp-test';
 import plugin from '../src/index';
-import { ROOT_PATH, S3_OPTIONS } from './constants';
+import { GRAASP_ACTOR, ROOT_PATH, S3_OPTIONS } from './constants';
 
 const schemas = {
   $id: 'http://graasp.org/',
@@ -43,6 +43,7 @@ const build = async ({
   const app = fastify();
   app.addSchema(schemas);
 
+  app.decorateRequest('member', GRAASP_ACTOR);
   app.decorate('taskRunner', runner);
   app.decorate('items', {
     taskManager: taskManager,

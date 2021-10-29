@@ -8,19 +8,15 @@ import {
 } from 'graasp-test';
 import build from './app';
 import { GET_ITEM_ID, IMAGE_PATH } from './constants';
-import { sizes } from '../src/utils/constants';
+import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
+import { FSProvider } from '../src/FileProviders/FSProvider';
 
 const taskManager = new ItemTaskManager();
 const runner = new TaskRunner();
 const membership = new ItemMembershipTaskManager();
 
 describe('Plugin Tests', () => {
-  /*  It's currently not possible to test the hooks, because we cannot spy on the fs functions,
-  describe('Test hooks', () => {
-
-  });*/
-
   describe('GET /thumbnails/:id/download', () => {
     beforeEach(() => {
       jest.clearAllMocks();
@@ -28,7 +24,7 @@ describe('Plugin Tests', () => {
       jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
     });
 
-    it('Successfully download all different size', async () => {
+    it('Successfully download all different sizes', async () => {
       const app = await build({
         taskManager,
         runner,
@@ -36,7 +32,7 @@ describe('Plugin Tests', () => {
       });
       mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
-      for (const size of sizes) {
+      for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
           url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
@@ -47,7 +43,7 @@ describe('Plugin Tests', () => {
       }
     });
 
-    it('Can\'t download if not at least read rights', async () => {
+    it("Can't download if doesn't have at least read rights", async () => {
       const app = await build({
         taskManager,
         runner,
@@ -57,7 +53,7 @@ describe('Plugin Tests', () => {
       const taskManagerError = 'MemberCannotReadItem';
       mockcreateGetOfItemTaskSequence(new Error(taskManagerError), true);
 
-      for (const size of sizes) {
+      for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
           url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
@@ -67,7 +63,7 @@ describe('Plugin Tests', () => {
       }
     });
 
-    it('Can\'t download non existent item', async () => {
+    it("Can't download non existent item", async () => {
       const app = await build({
         taskManager,
         runner,
@@ -77,7 +73,7 @@ describe('Plugin Tests', () => {
       const taskManagerError = 'ItemNotFound';
       mockcreateGetOfItemTaskSequence(new Error(taskManagerError), true);
 
-      for (const size of sizes) {
+      for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
           url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
@@ -96,6 +92,7 @@ describe('Plugin Tests', () => {
     });
 
     it('Successfully upload thumbnail', async () => {
+      const put = jest.spyOn(FSProvider.prototype, 'putObject');
       const app = await build({
         taskManager,
         runner,
@@ -113,10 +110,11 @@ describe('Plugin Tests', () => {
         headers: form.getHeaders(),
       });
 
-      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(put).toBeCalledTimes(sizes_names.length);
     });
 
-    it('Can\'t upload if not at least write rights', async () => {
+    it("Can't upload f doesn't have at least write rights", async () => {
       const app = await build({
         taskManager,
         runner,
