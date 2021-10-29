@@ -53,7 +53,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       });
 
       const { storageRootPath } = fastify.fileItemPluginOptions;
-      const s3instance = new s3Instance(fastify.s3FileItemPluginOptions);
+      const s3instance = enableS3FileItemPlugin
+        ? new s3Instance(fastify.s3FileItemPluginOptions)
+        : undefined;
 
       // register post delete handler to erase the file
       const deleteItemTaskName = item.getDeleteTaskName();
@@ -94,7 +96,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
                     },
                   )
                   .catch(function (error) {
-                    log.error(error);
+                    log?.error(error);
                   }),
               ),
             );
