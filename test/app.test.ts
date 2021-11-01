@@ -6,11 +6,12 @@ import {
   ItemTaskManager,
   ItemMembershipTaskManager,
 } from 'graasp-test';
+import { v4 } from 'uuid';
 import build from './app';
 import { DISABLE_S3, GET_ITEM_ID, IMAGE_PATH } from './constants';
 import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
-import { FSProvider } from '../src/FileProviders/FSProvider';
+import { FSProvider } from '../src/fileProviders/FSProvider';
 
 const taskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -48,8 +49,8 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
-        FSOptions: { storageRootPath: './test'},
-        options: { ...DISABLE_S3, pluginStoragePrefix: 'files'}
+        FSOptions: { storageRootPath: './test' },
+        options: { ...DISABLE_S3, pluginStoragePrefix: 'files' },
       });
       mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
@@ -81,6 +82,25 @@ describe('Plugin Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+      }
+    });
+
+    it('Item without thumbnail should return 404', async () => {
+      const app = await build({
+        taskManager,
+        runner,
+        membership,
+      });
+      const id = v4();
+      mockcreateGetOfItemTaskSequence({ id });
+
+      for (const size of sizes_names) {
+        const res = await app.inject({
+          method: 'GET',
+          url: `/thumbnails/${id}/download?size=${size}`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
       }
     });
 
@@ -141,8 +161,8 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
-        FSOptions: { storageRootPath: './test'},
-        options: { ...DISABLE_S3, pluginStoragePrefix: 'files'}
+        FSOptions: { storageRootPath: './test' },
+        options: { ...DISABLE_S3, pluginStoragePrefix: 'files' },
       });
       mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 

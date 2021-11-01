@@ -29,7 +29,9 @@ export class FSProvider implements FileOperations {
 
   async deleteItem(id: string): Promise<void> {
     const { storageRootPath } = this.options;
-    await rm(createFsFolder(storageRootPath,this.prefix,id), { recursive: true });
+    await rm(createFsFolder(storageRootPath, this.prefix, id), {
+      recursive: true,
+    });
   }
 
   async putObject(
@@ -39,7 +41,7 @@ export class FSProvider implements FileOperations {
     size: string,
   ): Promise<void> {
     const { storageRootPath } = this.options;
-    await mkdir(createFsFolder(storageRootPath,this.prefix,  id), {
+    await mkdir(createFsFolder(storageRootPath, this.prefix, id), {
       recursive: true,
     });
 

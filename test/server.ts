@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const server = require('./app')({
   logger: {
     level: 'info',

@@ -20,9 +20,17 @@ export const GRAASP_ACTOR: Actor = {
   id: 'actorid',
 };
 
-export const ENABLE_S3 = { enableS3FileItemPlugin: true, pluginStoragePrefix: '', prefix: '/thumbnails' };
+export const ENABLE_S3 = {
+  enableS3FileItemPlugin: true,
+  pluginStoragePrefix: '',
+  prefix: '/thumbnails',
+};
 
-export const DISABLE_S3 =  { enableS3FileItemPlugin: false, pluginStoragePrefix: '', prefix: '/thumbnails' };
+export const DISABLE_S3 = {
+  enableS3FileItemPlugin: false,
+  pluginStoragePrefix: '',
+  prefix: '/thumbnails',
+};
 
 export const S3_OPTIONS = {
   s3Region: 'string',

@@ -63,7 +63,10 @@ export class s3Provider implements FileOperations {
     await Promise.all(
       sizes_names.map((size) =>
         this.s3Instance
-          .deleteObject({ Bucket: bucket, Key: createS3Key(this.prefix, id, size) })
+          .deleteObject({
+            Bucket: bucket,
+            Key: createS3Key(this.prefix, id, size),
+          })
           .promise(),
       ),
     );
