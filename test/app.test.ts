@@ -7,7 +7,7 @@ import {
   ItemMembershipTaskManager,
 } from 'graasp-test';
 import build from './app';
-import { GET_ITEM_ID, IMAGE_PATH } from './constants';
+import { DISABLE_S3, GET_ITEM_ID, IMAGE_PATH } from './constants';
 import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
 import { FSProvider } from '../src/FileProviders/FSProvider';
@@ -29,6 +29,27 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
+      });
+      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
+
+      for (const size of sizes_names) {
+        const res = await app.inject({
+          method: 'GET',
+          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.body).toBeTruthy();
+      }
+    });
+
+    it('Successfully download all different sizes with storage prefix', async () => {
+      const app = await build({
+        taskManager,
+        runner,
+        membership,
+        FSOptions: { storageRootPath: './test'},
+        options: { ...DISABLE_S3, pluginStoragePrefix: 'files'}
       });
       mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
@@ -97,6 +118,31 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
+      });
+      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
+
+      const form = new FormData();
+      form.append('file', createReadStream(IMAGE_PATH));
+
+      const response = await app.inject({
+        method: 'POST',
+        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        payload: form,
+        headers: form.getHeaders(),
+      });
+
+      expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
+      expect(put).toBeCalledTimes(sizes_names.length);
+    });
+
+    it('Successfully upload thumbnail with storage prefix', async () => {
+      const put = jest.spyOn(FSProvider.prototype, 'putObject');
+      const app = await build({
+        taskManager,
+        runner,
+        membership,
+        FSOptions: { storageRootPath: './test'},
+        options: { ...DISABLE_S3, pluginStoragePrefix: 'files'}
       });
       mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 

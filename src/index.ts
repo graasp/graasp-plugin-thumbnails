@@ -14,7 +14,6 @@ import { createFsKey, createS3Key } from './utils/helpers';
 import { sizes_names, format, mimetype, sizes } from './utils/constants';
 import { FSProvider } from './FileProviders/FSProvider';
 
-const ROUTES_PREFIX = '/thumbnails';
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 
 declare module 'fastify' {
@@ -26,6 +25,7 @@ declare module 'fastify' {
 
 export interface GraaspThumbnailsOptions {
   enableS3FileItemPlugin?: boolean;
+  pluginStoragePrefix :string;
 }
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
@@ -38,7 +38,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     itemMemberships: { taskManager: membership },
   } = fastify;
 
-  const { enableS3FileItemPlugin } = options;
+  const { enableS3FileItemPlugin, pluginStoragePrefix } = options;
 
   fastify.register(
     async function (fastify) {
@@ -56,8 +56,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       const { storageRootPath } = fastify.fileItemPluginOptions;
 
       const instance = enableS3FileItemPlugin
-        ? new s3Provider(fastify.s3FileItemPluginOptions)
-        : new FSProvider(fastify.fileItemPluginOptions);
+        ? new s3Provider(fastify.s3FileItemPluginOptions, pluginStoragePrefix)
+        : new FSProvider(fastify.fileItemPluginOptions, pluginStoragePrefix);
 
       // register post delete handler to erase the file
       const deleteItemTaskName = item.getDeleteTaskName();
@@ -138,7 +138,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           await runner.runSingleSequence(tasks, log);
 
           if (enableS3FileItemPlugin) {
-            reply.send({ key: createS3Key(id, size) }).status(200);
+            reply.send({ key: createS3Key(pluginStoragePrefix, id, size) }).status(200);
           } else {
             // Get thumbnail path
             reply.type(mimetype);
@@ -149,13 +149,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               contentDisposition(`thumb-${id}-${size}`),
             );
             return fs.createReadStream(
-              `${storageRootPath}/${createFsKey(id, size)}`,
+              `${storageRootPath}/${createFsKey(pluginStoragePrefix, id, size)}`,
             );
           }
         },
       );
     },
-    { prefix: ROUTES_PREFIX },
   );
 };
 

@@ -6,9 +6,11 @@ import { createFsFolder, createFsKey } from '../utils/helpers';
 
 export class FSProvider implements FileOperations {
   private readonly options: GraaspFileItemOptions;
+  private readonly prefix;
 
-  constructor(options: GraaspFileItemOptions) {
+  constructor(options: GraaspFileItemOptions, prefix: string) {
     this.options = options;
+    this.prefix = prefix;
   }
 
   async copyObject(
@@ -20,14 +22,14 @@ export class FSProvider implements FileOperations {
     const { storageRootPath } = this.options;
 
     await copyFile(
-      `${storageRootPath}/${createFsKey(originalId, size)}`,
-      `${storageRootPath}/${createFsKey(newId, size)}`,
+      `${storageRootPath}/${createFsKey(this.prefix, originalId, size)}`,
+      `${storageRootPath}/${createFsKey(this.prefix, newId, size)}`,
     );
   }
 
   async deleteItem(id: string): Promise<void> {
     const { storageRootPath } = this.options;
-    await rm(createFsFolder(storageRootPath, id), { recursive: true });
+    await rm(createFsFolder(storageRootPath,this.prefix,id), { recursive: true });
   }
 
   async putObject(
@@ -37,10 +39,10 @@ export class FSProvider implements FileOperations {
     size: string,
   ): Promise<void> {
     const { storageRootPath } = this.options;
-    await mkdir(createFsFolder(storageRootPath, id), {
+    await mkdir(createFsFolder(storageRootPath,this.prefix,  id), {
       recursive: true,
     });
 
-    object.toFile(`${storageRootPath}/${createFsKey(id, size)}`);
+    object.toFile(`${storageRootPath}/${createFsKey(this.prefix, id, size)}`);
   }
 }

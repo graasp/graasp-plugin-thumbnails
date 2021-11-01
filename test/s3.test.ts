@@ -49,6 +49,26 @@ describe('Plugin Tests', () => {
       }
     });
 
+    it('Successfully download all different sizes with storage prefix', async () => {
+      const app = await build({
+        taskManager,
+        runner,
+        membership,
+        options: { ...ENABLE_S3, pluginStoragePrefix: 'files'}
+      });
+      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
+
+      for (const size of sizes_names) {
+        const res = await app.inject({
+          method: 'GET',
+          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+        });
+
+        expect(res.statusCode).toBe(StatusCodes.OK);
+        expect(res.json()).toEqual({ key: `files/${ITEM_S3_KEY}/${size}` });
+      }
+    });
+
     it("Can't download if doesn't have at least read rights", async () => {
       const app = await build({
         taskManager,
@@ -133,9 +153,6 @@ describe('Plugin Tests', () => {
 
       expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);
     });
-
-    /* It's currently not possible to test the AWS upload funciton, because the s3 client always timeout,
-    Maybe use something like localstack (https://github.com/localstack/localstack) to mock the AWS endpoints*/
 
     it('Successfully upload thumbnail', async () => {
       const put = jest.spyOn(s3Provider.prototype, 'putObject');

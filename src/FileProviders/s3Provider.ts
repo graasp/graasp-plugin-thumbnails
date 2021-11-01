@@ -7,10 +7,12 @@ import { createS3Key } from '../utils/helpers';
 
 export class s3Provider implements FileOperations {
   private readonly options: GraaspS3FileItemOptions;
+  private readonly prefix: string;
   private readonly s3Instance: S3;
 
-  constructor(options: GraaspS3FileItemOptions) {
+  constructor(options: GraaspS3FileItemOptions, prefix: string) {
     this.options = options;
+    this.prefix = prefix;
 
     const {
       s3Region: region,
@@ -38,9 +40,9 @@ export class s3Provider implements FileOperations {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
-      CopySource: `${bucket}/${createS3Key(originalId, size)}`,
+      CopySource: `${bucket}/${createS3Key(this.prefix, originalId, size)}`,
       Bucket: bucket,
-      Key: createS3Key(newId, size),
+      Key: createS3Key(this.prefix, newId, size),
       Metadata: {
         member: memberId,
         item: newId,
@@ -61,7 +63,7 @@ export class s3Provider implements FileOperations {
     await Promise.all(
       sizes_names.map((size) =>
         this.s3Instance
-          .deleteObject({ Bucket: bucket, Key: createS3Key(id, size) })
+          .deleteObject({ Bucket: bucket, Key: createS3Key(this.prefix, id, size) })
           .promise(),
       ),
     );
@@ -77,7 +79,7 @@ export class s3Provider implements FileOperations {
 
     const params = {
       Bucket: bucket,
-      Key: createS3Key(id, size),
+      Key: createS3Key(this.prefix, id, size),
       Metadata: {
         member: memberId,
         item: id,
