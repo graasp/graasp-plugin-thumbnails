@@ -2,8 +2,8 @@ import contentDisposition from 'content-disposition';
 import { FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import fs from 'fs';
-import { readFile, access } from 'fs/promises';
-import { IdParam } from 'graasp';
+import { access } from 'fs/promises';
+import { Actor, IdParam, Member, Task } from 'graasp';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
 import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
@@ -12,7 +12,7 @@ import sharp from 'sharp';
 import { upload, download } from './schema';
 import { s3Provider } from './fileProviders/s3Provider';
 import { createFsKey, createS3Key } from './utils/helpers';
-import { sizes_names, format, mimetype, sizes } from './utils/constants';
+import { format, mimetype, sizes } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
@@ -27,17 +27,23 @@ declare module 'fastify' {
 export interface GraaspThumbnailsOptions {
   enableS3FileItemPlugin?: boolean;
   pluginStoragePrefix: string;
+
+  uploadValidation: (
+    id: string,
+    member: Member,
+  ) => Promise<Task<Actor, unknown>[]>;
+
+  downloadValidation: (
+    id: string,
+    member: Member,
+  ) => Promise<Task<Actor, unknown>[]>;
 }
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
-  const {
-    items: { taskManager: item },
-    taskRunner: runner,
-    itemMemberships: { taskManager: membership },
-  } = fastify;
+  const { taskRunner: runner } = fastify;
 
   const { enableS3FileItemPlugin, pluginStoragePrefix } = options;
 
@@ -60,7 +66,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       : new FSProvider(fastify.fileItemPluginOptions, pluginStoragePrefix);
 
     // register post delete handler to erase the file
-    const deleteItemTaskName = item.getDeleteTaskName();
+    /* const deleteItemTaskName = item.getDeleteTaskName();
     runner.setTaskPostHookHandler(
       deleteItemTaskName,
       async ({ id }, _actor, { log }) => {
@@ -85,7 +91,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           }),
         );
       },
-    );
+    );*/
 
     fastify.post<{ Params: IdParam }>(
       '/:id/upload',
@@ -98,9 +104,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           log,
         } = request;
 
-        const tasks = membership.createGetOfItemTaskSequence(member, id);
-        tasks[1].input = { validatePermission: 'write' };
-        await runner.runSingleSequence(tasks, log);
+        await runner.runSingleSequence(
+          await options.uploadValidation(id, member),
+          log,
+        );
 
         const imageBuffer = await data.toBuffer();
         const files = sizes.map(({ name, width }) => ({
@@ -132,10 +139,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           log,
         } = request;
 
-        // Ensures the member has at least read permissions
-        const tasks = membership.createGetOfItemTaskSequence(member, id);
-        tasks[1].input = { validatePermission: 'read' };
-        await runner.runSingleSequence(tasks, log);
+        await runner.runSingleSequence(
+          await options.downloadValidation(id, member),
+          log,
+        );
 
         if (enableS3FileItemPlugin) {
           reply
