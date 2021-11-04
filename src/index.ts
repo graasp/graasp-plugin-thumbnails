@@ -12,7 +12,7 @@ import sharp from 'sharp';
 import { upload, download } from './schema';
 import { s3Provider } from './fileProviders/s3Provider';
 import { createFsKey, createS3Key } from './utils/helpers';
-import { format, mimetype, sizes } from './utils/constants';
+import { format, mimetype, sizes, sizes_names } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
@@ -26,6 +26,7 @@ declare module 'fastify' {
 
 export interface GraaspThumbnailsOptions {
   enableS3FileItemPlugin?: boolean;
+  enableItemsHooks?: boolean;
   pluginStoragePrefix: string;
 
   uploadValidation: (
@@ -45,7 +46,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 ) => {
   const { taskRunner: runner } = fastify;
 
-  const { enableS3FileItemPlugin, pluginStoragePrefix } = options;
+  const { enableS3FileItemPlugin, enableItemsHooks, pluginStoragePrefix } =
+    options;
 
   fastify.register(async function (fastify) {
     fastify.register(fastifyMultipart, {
@@ -65,33 +67,39 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       ? new s3Provider(fastify.s3FileItemPluginOptions, pluginStoragePrefix)
       : new FSProvider(fastify.fileItemPluginOptions, pluginStoragePrefix);
 
-    // register post delete handler to erase the file
-    /* const deleteItemTaskName = item.getDeleteTaskName();
-    runner.setTaskPostHookHandler(
-      deleteItemTaskName,
-      async ({ id }, _actor, { log }) => {
-        instance.deleteItem(id).catch(function (error) {
-          log?.error(error);
-        });
-      },
-    );
+    if (enableItemsHooks) {
+      const {
+        items: { taskManager },
+      } = fastify;
 
-    // register pre copy handler to make a copy of the 'file item's file
-    const copyItemTaskName = item.getCopyTaskName();
-    runner.setTaskPostHookHandler(
-      copyItemTaskName,
-      async ({ id }, actor, { log }, { original }) => {
-        await Promise.all(
-          sizes_names.map((size) => {
-            instance
-              .copyObject(original.id, id, actor.id, size)
-              .catch(function (error) {
-                log?.error(error);
-              });
-          }),
-        );
-      },
-    );*/
+      // register post delete handler to erase the file
+      const deleteItemTaskName = taskManager.getDeleteTaskName();
+      runner.setTaskPostHookHandler(
+        deleteItemTaskName,
+        async ({ id }, _actor, { log }) => {
+          instance.deleteItem(id).catch(function (error) {
+            log?.error(error);
+          });
+        },
+      );
+
+      // register pre copy handler to make a copy of the 'file item's file
+      const copyItemTaskName = taskManager.getCopyTaskName();
+      runner.setTaskPostHookHandler(
+        copyItemTaskName,
+        async ({ id }, actor, { log }, { original }) => {
+          await Promise.all(
+            sizes_names.map((size) => {
+              instance
+                .copyObject(original.id, id, actor.id, size)
+                .catch(function (error) {
+                  log?.error(error);
+                });
+            }),
+          );
+        },
+      );
+    }
 
     fastify.post<{ Params: IdParam }>(
       '/:id/upload',

@@ -21,6 +21,12 @@ describe('Plugin Tests', () => {
     jest.clearAllMocks();
     jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
     jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
+
+    jest
+      .spyOn(TaskRunner.prototype, 'runSingleSequence')
+      .mockImplementation(async (tasks) => {
+        return tasks[0]?.getResult();
+      });
   });
 
   describe('GET /thumbnails/:id/download', () => {
@@ -31,7 +37,6 @@ describe('Plugin Tests', () => {
         membership,
         options: ENABLE_S3,
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
       for (const size of sizes_names) {
         const res = await app.inject({
@@ -51,7 +56,6 @@ describe('Plugin Tests', () => {
         membership,
         options: { ...ENABLE_S3, pluginStoragePrefix: 'files' },
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
       for (const size of sizes_names) {
         const res = await app.inject({
@@ -69,7 +73,11 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
-        options: ENABLE_S3,
+        options: {
+          ...ENABLE_S3,
+          downloadValidation: async (id, member) =>
+            membership.createGetOfItemTaskSequence(member, id),
+        },
       });
 
       const taskManagerError = 'MemberCannotReadItem';
@@ -82,6 +90,7 @@ describe('Plugin Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+        expect(res.json().message).toBe(taskManagerError);
       }
     });
 
@@ -90,7 +99,11 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
-        options: ENABLE_S3,
+        options: {
+          ...ENABLE_S3,
+          downloadValidation: async (id, member) =>
+            membership.createGetOfItemTaskSequence(member, id),
+        },
       });
 
       const taskManagerError = 'ItemNotFound';
@@ -103,6 +116,7 @@ describe('Plugin Tests', () => {
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+        expect(res.json().message).toBe(taskManagerError);
       }
     });
   });
@@ -113,7 +127,11 @@ describe('Plugin Tests', () => {
         taskManager,
         runner,
         membership,
-        options: ENABLE_S3,
+        options: {
+          ...ENABLE_S3,
+          uploadValidation: async (id, member) =>
+            membership.createGetOfItemTaskSequence(member, id),
+        },
       });
 
       const taskManagerError = 'MemberCannotWriteItem';
@@ -130,6 +148,7 @@ describe('Plugin Tests', () => {
       });
 
       expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.json().message).toBe(taskManagerError);
     });
 
     it('Upload without files should fail', async () => {
@@ -139,7 +158,6 @@ describe('Plugin Tests', () => {
         membership,
         options: ENABLE_S3,
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
       const response = await app.inject({
         method: 'POST',
@@ -157,7 +175,6 @@ describe('Plugin Tests', () => {
         membership,
         options: ENABLE_S3,
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
 
       const form = new FormData();
       form.append('file', createReadStream(IMAGE_PATH));
@@ -168,6 +185,7 @@ describe('Plugin Tests', () => {
         payload: form,
         headers: form.getHeaders(),
       });
+
       expect(response.statusCode).toBe(StatusCodes.NO_CONTENT);
       expect(put).toBeCalledTimes(sizes_names.length);
     });

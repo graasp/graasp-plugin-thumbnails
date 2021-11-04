@@ -1,5 +1,4 @@
-import { Actor, Item } from 'graasp';
-
+import { Actor, Item, Member, Task } from 'graasp';
 export const ROOT_PATH = './test/files';
 export const IMAGE_PATH = './test/files/image.jpeg';
 
@@ -23,12 +22,31 @@ export const GRAASP_ACTOR: Actor = {
 export const ENABLE_S3 = {
   enableS3FileItemPlugin: true,
   pluginStoragePrefix: '',
+  uploadValidation: async (
+    id: string,
+    member: Member,
+  ): Promise<Task<Member, unknown>[]> => [],
+
+  downloadValidation: async (
+    id: string,
+    member: Member,
+  ): Promise<Task<Member, unknown>[]> => [],
   prefix: '/thumbnails',
 };
 
 export const DISABLE_S3 = {
   enableS3FileItemPlugin: false,
   pluginStoragePrefix: '',
+
+  uploadValidation: async (
+    id: string,
+    member: Member,
+  ): Promise<Task<Member, unknown>[]> => [],
+
+  downloadValidation: async (
+    id: string,
+    member: Member,
+  ): Promise<Task<Member, unknown>[]> => [],
   prefix: '/thumbnails',
 };
 

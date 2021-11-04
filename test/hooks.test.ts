@@ -5,7 +5,7 @@ import {
 } from 'graasp-test';
 import { v4 } from 'uuid';
 import build from './app';
-import { ENABLE_S3, GET_ITEM_ID, GRAASP_ACTOR } from './constants';
+import { DISABLE_S3, ENABLE_S3, GET_ITEM_ID, GRAASP_ACTOR } from './constants';
 import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
 import { FSProvider } from '../src/fileProviders/FSProvider';
@@ -31,12 +31,13 @@ describe('Test hooks', () => {
             done();
           }
         });
+
       build({
         taskManager,
         runner,
         membership,
+        options: { ...DISABLE_S3, enableItemsHooks: true },
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
     });
 
     it('Delete corresponding file on delete task', (done) => {
@@ -53,12 +54,13 @@ describe('Test hooks', () => {
             done();
           }
         });
+
       build({
         taskManager,
         runner,
         membership,
+        options: { ...DISABLE_S3, enableItemsHooks: true },
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
     });
   });
 
@@ -77,13 +79,13 @@ describe('Test hooks', () => {
             done();
           }
         });
+
       build({
         taskManager,
         runner,
         membership,
-        options: ENABLE_S3,
+        options: { ...ENABLE_S3, enableItemsHooks: true },
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
     });
 
     it('Delete corresponding file on delete task', (done) => {
@@ -100,13 +102,13 @@ describe('Test hooks', () => {
             done();
           }
         });
+
       build({
         taskManager,
         runner,
         membership,
-        options: ENABLE_S3,
+        options: { ...ENABLE_S3, enableItemsHooks: true },
       });
-      mockcreateGetOfItemTaskSequence({ id: GET_ITEM_ID });
     });
   });
 });
