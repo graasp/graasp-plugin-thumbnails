@@ -13,7 +13,7 @@ export default interface FileOperations {
   putObject(
     id: string,
     object: Sharp,
-    memberId: string,
     size: string,
+    memberId: string,
   ): Promise<void>;
 }

@@ -2,10 +2,11 @@ import S3 from 'aws-sdk/clients/s3';
 import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
 import { Sharp } from 'sharp';
 import FileOperations from './FileOperations';
-import { sizes_names } from '../utils/constants';
+import { mimetype, sizes_names } from '../utils/constants';
 import { createS3Key } from '../utils/helpers';
+import contentDisposition from 'content-disposition';
 
-export class s3Provider implements FileOperations {
+export class S3Provider implements FileOperations {
   private readonly options: GraaspS3FileItemOptions;
   private readonly prefix: string;
   private readonly s3Instance: S3;
@@ -48,8 +49,8 @@ export class s3Provider implements FileOperations {
         item: newId,
       },
       MetadataDirective: 'REPLACE',
-      ContentDisposition: `attachment; filename="tumb-${newId}"`,
-      ContentType: 'image/jpeg',
+      ContentDisposition: contentDisposition(`tumb-${newId}`),
+      ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };
 
@@ -75,8 +76,8 @@ export class s3Provider implements FileOperations {
   async putObject(
     id: string,
     object: Sharp,
-    memberId: string,
     size: string,
+    memberId: string,
   ): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
@@ -88,7 +89,7 @@ export class s3Provider implements FileOperations {
         item: id,
       },
       Body: await object.toBuffer(),
-      ContentType: 'image/jpeg',
+      ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };
 

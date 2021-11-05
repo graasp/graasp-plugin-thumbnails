@@ -16,8 +16,8 @@ export class FSProvider implements FileOperations {
   async copyObject(
     originalId: string,
     newId: string,
-    _memberId: string,
     size: string,
+    _memberId: string,
   ): Promise<void> {
     const { storageRootPath } = this.options;
 
@@ -37,8 +37,8 @@ export class FSProvider implements FileOperations {
   async putObject(
     id: string,
     object: Sharp,
-    _memberId: string,
     size: string,
+    _memberId: string,
   ): Promise<void> {
     const { storageRootPath } = this.options;
     await mkdir(createFsFolder(storageRootPath, this.prefix, id), {

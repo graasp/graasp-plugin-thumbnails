@@ -10,7 +10,7 @@ import build from './app';
 import { ENABLE_S3, GET_ITEM_ID, IMAGE_PATH, ITEM_S3_KEY } from './constants';
 import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
-import { s3Provider } from '../src/fileProviders/s3Provider';
+import { S3Provider } from '../src/fileProviders/s3Provider';
 
 const taskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -168,7 +168,7 @@ describe('Plugin Tests', () => {
     });
 
     it('Successfully upload thumbnail', async () => {
-      const put = jest.spyOn(s3Provider.prototype, 'putObject');
+      const put = jest.spyOn(S3Provider.prototype, 'putObject');
       const app = await build({
         taskManager,
         runner,

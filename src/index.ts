@@ -10,7 +10,7 @@ import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import sharp from 'sharp';
 
 import { upload, download } from './schema';
-import { s3Provider } from './fileProviders/s3Provider';
+import { S3Provider } from './fileProviders/s3Provider';
 import { createFsKey, createS3Key } from './utils/helpers';
 import { format, mimetype, sizes, sizes_names } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
@@ -64,7 +64,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const { storageRootPath } = fastify.fileItemPluginOptions;
 
     const instance = enableS3FileItemPlugin
-      ? new s3Provider(fastify.s3FileItemPluginOptions, pluginStoragePrefix)
+      ? new S3Provider(fastify.s3FileItemPluginOptions, pluginStoragePrefix)
       : new FSProvider(fastify.fileItemPluginOptions, pluginStoragePrefix);
 
     if (enableItemsHooks) {
@@ -91,7 +91,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           await Promise.all(
             sizes_names.map((size) => {
               instance
-                .copyObject(original.id, id, actor.id, size)
+                .copyObject(original.id, id, size, actor.id)
                 .catch(function (error) {
                   log?.error(error);
                 });
@@ -126,7 +126,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         await Promise.all(
           files.map(async ({ size, image }) => {
             instance
-              .putObject(id, image, member.id, size)
+              .putObject(id, image, size, member.id)
               .catch(function (error) {
                 log.error(error);
               });
@@ -155,7 +155,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         if (enableS3FileItemPlugin) {
           reply
             .send({ key: createS3Key(pluginStoragePrefix, id, size) })
-            .status(200);
+            .status(StatusCodes.OK);
         } else {
           try {
             // ensure the file exists, if not throw error
