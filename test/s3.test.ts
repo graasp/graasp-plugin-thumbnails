@@ -29,7 +29,7 @@ describe('Plugin Tests', () => {
       });
   });
 
-  describe('GET /thumbnails/:id/download', () => {
+  describe('GET /thumbnails/:id', () => {
     it('Successfully download all different sizes', async () => {
       const app = await build({
         taskManager,
@@ -41,7 +41,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -60,7 +60,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -86,7 +86,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -112,7 +112,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -121,7 +121,7 @@ describe('Plugin Tests', () => {
     });
   });
 
-  describe('POST /thumbnails/:id/upload', () => {
+  describe('POST /thumbnails/:id', () => {
     it("Can't upload if doesn't have at least write rights", async () => {
       const app = await build({
         taskManager,
@@ -142,7 +142,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
         payload: form,
         headers: form.getHeaders(),
       });
@@ -161,7 +161,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);
@@ -181,7 +181,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
         payload: form,
         headers: form.getHeaders(),
       });

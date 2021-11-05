@@ -18,7 +18,7 @@ const runner = new TaskRunner();
 const membership = new ItemMembershipTaskManager();
 
 describe('Plugin Tests', () => {
-  describe('GET /thumbnails/:id/download', () => {
+  describe('GET /thumbnails/:id', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
@@ -41,7 +41,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -61,7 +61,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.OK);
@@ -87,7 +87,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -106,7 +106,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${id}/download?size=${size}`,
+          url: `/thumbnails/${id}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
@@ -131,7 +131,7 @@ describe('Plugin Tests', () => {
       for (const size of sizes_names) {
         const res = await app.inject({
           method: 'GET',
-          url: `/thumbnails/${GET_ITEM_ID}/download?size=${size}`,
+          url: `/thumbnails/${GET_ITEM_ID}?size=${size}`,
         });
 
         expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
@@ -140,7 +140,7 @@ describe('Plugin Tests', () => {
     });
   });
 
-  describe('POST /thumbnails/:id/upload', () => {
+  describe('POST /thumbnails/:id', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
@@ -166,7 +166,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
         payload: form,
         headers: form.getHeaders(),
       });
@@ -191,7 +191,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
         payload: form,
         headers: form.getHeaders(),
       });
@@ -220,7 +220,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
         payload: form,
         headers: form.getHeaders(),
       });
@@ -238,7 +238,7 @@ describe('Plugin Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/thumbnails/${GET_ITEM_ID}/upload`,
+        url: `/thumbnails/${GET_ITEM_ID}`,
       });
 
       expect(response.statusCode).toBe(StatusCodes.NOT_ACCEPTABLE);

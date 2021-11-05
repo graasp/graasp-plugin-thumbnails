@@ -102,7 +102,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     }
 
     fastify.post<{ Params: IdParam }>(
-      '/:id/upload',
+      '/:id',
       { schema: upload },
       async (request, reply) => {
         const data = await request.file();
@@ -137,7 +137,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     );
 
     fastify.get<{ Params: IdParam; Querystring: { size: string } }>(
-      '/:id/download',
+      '/:id',
       { schema: download },
       async (request, reply) => {
         const {
