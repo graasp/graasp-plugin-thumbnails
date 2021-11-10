@@ -1,11 +1,14 @@
 import contentDisposition from 'content-disposition';
-import { FastifyPluginAsync } from 'fastify';
+import { FastifyLoggerInstance, FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import fs from 'fs';
 import { access } from 'fs/promises';
-import { Actor, IdParam, Member, Task } from 'graasp';
-import { GraaspS3FileItemOptions } from 'graasp-plugin-s3-file-item';
-import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
+import { Actor, IdParam, Item, Member, Task } from 'graasp';
+import {
+  GraaspS3FileItemOptions,
+  S3FileItemExtra,
+} from 'graasp-plugin-s3-file-item';
+import { GraaspFileItemOptions, FileItemExtra } from 'graasp-plugin-file-item';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import sharp from 'sharp';
 
@@ -14,6 +17,7 @@ import { S3Provider } from './fileProviders/s3Provider';
 import { createFsKey, createS3Key } from './utils/helpers';
 import { format, mimetype, sizes, sizes_names } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
+import { ITEM_TYPE } from 'graasp-plugin-file-item/dist/plugin';
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 
@@ -67,10 +71,83 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       ? new S3Provider(fastify.s3FileItemPluginOptions, pluginStoragePrefix)
       : new FSProvider(fastify.fileItemPluginOptions, pluginStoragePrefix);
 
+    const createAndSaveThumbnails = async (
+      id: string,
+      imageBuffer: Buffer,
+      actor: Actor,
+      log: FastifyLoggerInstance,
+    ) => {
+      const files = sizes.map(({ name, width }) => ({
+        size: name,
+        image: sharp(imageBuffer).resize({ width }).toFormat(format),
+      }));
+
+      await Promise.all(
+        files.map(async ({ size, image }) => {
+          instance
+            .putObject({ id, object: image, size, memberId: actor.id })
+            .catch(function (error) {
+              log.error(error);
+            });
+        }),
+      );
+    };
+
     if (enableItemsHooks) {
       const {
         items: { taskManager },
       } = fastify;
+
+      // register post create handler to create thumbnails for images
+      const createItemTaskName = taskManager.getCreateTaskName();
+
+      if (enableS3FileItemPlugin) {
+        runner.setTaskPostHookHandler<Item<S3FileItemExtra>>(
+          createItemTaskName,
+          async (item, actor, { log }) => {
+            const {
+              id,
+              type: itemType,
+              extra: { s3File },
+            } = item;
+            if (
+              itemType !== ITEM_TYPE ||
+              !s3File ||
+              !s3File.contenttype.startsWith('image')
+            )
+              return;
+
+            await createAndSaveThumbnails(
+              id,
+              await instance.getObject({ key: s3File.key }),
+              actor,
+              log,
+            );
+          },
+        );
+      } else {
+        runner.setTaskPostHookHandler<Item<FileItemExtra>>(
+          createItemTaskName,
+          async (item, actor, { log }) => {
+            const { id, type: itemType, extra: { file } = {} } = item;
+            if (
+              itemType !== ITEM_TYPE ||
+              !file ||
+              !file.mimetype.startsWith('image')
+            )
+              return;
+
+            await createAndSaveThumbnails(
+              id,
+              await instance.getObject({
+                key: `${storageRootPath}/${file.path}`,
+              }),
+              actor,
+              log,
+            );
+          },
+        );
+      }
 
       // register post delete handler to erase the file
       const deleteItemTaskName = taskManager.getDeleteTaskName();
@@ -91,7 +168,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           await Promise.all(
             sizes_names.map((size) => {
               instance
-                .copyObject(original.id, id, size, actor.id)
+                .copyObject({
+                  originalId: original.id,
+                  newId: id,
+                  size,
+                  memberId: actor.id,
+                })
                 .catch(function (error) {
                   log?.error(error);
                 });
@@ -117,21 +199,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           log,
         );
 
-        const imageBuffer = await data.toBuffer();
-        const files = sizes.map(({ name, width }) => ({
-          size: name,
-          image: sharp(imageBuffer).resize({ width }).toFormat(format),
-        }));
+        await createAndSaveThumbnails(id, await data.toBuffer(), member, log);
 
-        await Promise.all(
-          files.map(async ({ size, image }) => {
-            instance
-              .putObject(id, image, size, member.id)
-              .catch(function (error) {
-                log.error(error);
-              });
-          }),
-        );
         reply.status(StatusCodes.NO_CONTENT);
       },
     );

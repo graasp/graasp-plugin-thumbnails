@@ -3,22 +3,30 @@ import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import { Sharp } from 'sharp';
 import FileOperations from './FileOperations';
 import { createFsFolder, createFsKey } from '../utils/helpers';
+import { readFile } from 'fs/promises';
 
 export class FSProvider implements FileOperations {
   private readonly options: GraaspFileItemOptions;
-  private readonly prefix;
+  private readonly prefix: string;
 
   constructor(options: GraaspFileItemOptions, prefix: string) {
     this.options = options;
     this.prefix = prefix;
   }
 
-  async copyObject(
-    originalId: string,
-    newId: string,
-    size: string,
-    _memberId: string,
-  ): Promise<void> {
+  async getObject({ key }: { key: string }): Promise<Buffer> {
+    return await readFile(key);
+  }
+
+  async copyObject({
+    originalId,
+    newId,
+    size,
+  }: {
+    originalId: string;
+    newId: string;
+    size: string;
+  }): Promise<void> {
     const { storageRootPath } = this.options;
 
     await copyFile(
@@ -27,19 +35,22 @@ export class FSProvider implements FileOperations {
     );
   }
 
-  async deleteItem(id: string): Promise<void> {
+  async deleteItem({ id }: { id: string }): Promise<void> {
     const { storageRootPath } = this.options;
     await rm(createFsFolder(storageRootPath, this.prefix, id), {
       recursive: true,
     });
   }
 
-  async putObject(
-    id: string,
-    object: Sharp,
-    size: string,
-    _memberId: string,
-  ): Promise<void> {
+  async putObject({
+    id,
+    object,
+    size,
+  }: {
+    id: string;
+    object: Sharp;
+    size: string;
+  }): Promise<void> {
     const { storageRootPath } = this.options;
     await mkdir(createFsFolder(storageRootPath, this.prefix, id), {
       recursive: true,

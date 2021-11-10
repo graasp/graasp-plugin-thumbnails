@@ -32,12 +32,27 @@ export class S3Provider implements FileOperations {
       });
   }
 
-  async copyObject(
-    originalId: string,
-    newId: string,
-    size: string,
-    memberId: string,
-  ): Promise<void> {
+  async getObject({ key }: { key: string }): Promise<Buffer> {
+    const { s3Bucket: bucket } = this.options;
+
+    const params = {
+      Bucket: bucket,
+      Key: key,
+    };
+    return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
+  }
+
+  async copyObject({
+    originalId,
+    newId,
+    size,
+    memberId,
+  }: {
+    originalId: string;
+    newId: string;
+    size: string;
+    memberId: string;
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
@@ -49,16 +64,16 @@ export class S3Provider implements FileOperations {
         item: newId,
       },
       MetadataDirective: 'REPLACE',
-      ContentDisposition: contentDisposition(`tumb-${newId}`),
+      ContentDisposition: contentDisposition(`tumb-${newId}-${size}`),
       ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };
 
     // TODO: the Cache-Control policy metadata is lost. try to set a global policy for the bucket in aws.
-    await this.s3Instance.copyObject(params).promise();
+    await this.s3Instance.getObject(params).promise();
   }
 
-  async deleteItem(id: string): Promise<void> {
+  async deleteItem({ id }: { id: string }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     await Promise.all(
@@ -73,12 +88,17 @@ export class S3Provider implements FileOperations {
     );
   }
 
-  async putObject(
-    id: string,
-    object: Sharp,
-    size: string,
-    memberId: string,
-  ): Promise<void> {
+  async putObject({
+    id,
+    object,
+    size,
+    memberId,
+  }: {
+    id: string;
+    object: Sharp;
+    size: string;
+    memberId: string;
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
