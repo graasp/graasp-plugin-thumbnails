@@ -1,3 +1,5 @@
+import { FastifyReply } from 'fastify';
+import { ReadStream } from 'fs';
 import { Sharp } from 'sharp';
 
 export default interface FileOperations {
@@ -28,4 +30,16 @@ export default interface FileOperations {
   }): Promise<void>;
 
   getObject({ key }: { key: string }): Promise<Buffer>;
+
+  getObjectUrl({
+    reply,
+    pluginStoragePrefix,
+    id,
+    size,
+  }: {
+    reply: FastifyReply;
+    pluginStoragePrefix: string;
+    id: string;
+    size: string;
+  }): Promise<ReadStream> | Promise<void>;
 }

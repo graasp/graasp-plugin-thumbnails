@@ -1,8 +1,6 @@
 import contentDisposition from 'content-disposition';
 import { FastifyLoggerInstance, FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
-import fs from 'fs';
-import { access } from 'fs/promises';
 import { Actor, IdParam, Item, Member, Task } from 'graasp';
 import {
   GraaspS3FileItemOptions,
@@ -221,40 +219,17 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           log,
         );
 
-        if (enableS3FileItemPlugin) {
-          reply
-            .send({ key: createS3Key(pluginStoragePrefix, id, size) })
-            .status(StatusCodes.OK);
-        } else {
-          try {
-            // ensure the file exists, if not throw error
-            await access(
-              `${storageRootPath}/${createFsKey(
-                pluginStoragePrefix,
-                id,
-                size,
-              )}`,
-            );
-
-            // Get thumbnail path
-            reply.type(mimetype);
-            // this header will make the browser download the file with 'name' instead of
-            // simply opening it and showing it
-            reply.header(
-              'Content-Disposition',
-              contentDisposition(`thumb-${id}-${size}`),
-            );
-            return fs.createReadStream(
-              `${storageRootPath}/${createFsKey(
-                pluginStoragePrefix,
-                id,
-                size,
-              )}`,
-            );
-          } catch (error) {
-            // return 404 if item doesn't have a thumbnail
-            reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
-          }
+        try {
+          return instance.getObjectUrl({
+            reply,
+            storageRootPath,
+            pluginStoragePrefix,
+            id,
+            size,
+          });
+        } catch (error) {
+          // return 404 if item doesn't have a thumbnail
+          reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
         }
       },
     );

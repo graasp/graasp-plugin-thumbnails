@@ -5,7 +5,13 @@ import {
 } from 'graasp-test';
 import { v4 } from 'uuid';
 import build from './app';
-import { DISABLE_S3, ENABLE_S3, GRAASP_ACTOR, ITEM_S3_KEY, ROOT_PATH } from './constants';
+import {
+  DISABLE_S3,
+  ENABLE_S3,
+  GRAASP_ACTOR,
+  ITEM_S3_KEY,
+  ROOT_PATH,
+} from './constants';
 import { mimetype, sizes_names } from '../src/utils/constants';
 import { FSProvider } from '../src/fileProviders/FSProvider';
 import { S3Provider } from '../src/fileProviders/s3Provider';
@@ -70,7 +76,11 @@ describe('Test hooks', () => {
         .spyOn(runner, 'setTaskPostHookHandler')
         .mockImplementation(async (name, fn) => {
           if (name === taskManager.getCreateTaskName()) {
-            const item = { id: v4(), type: 'file', extra: { file: { mimetype, path: `${ITEM_S3_KEY}/small`} }};
+            const item = {
+              id: v4(),
+              type: 'file',
+              extra: { file: { mimetype, path: `${ITEM_S3_KEY}/small` } },
+            };
             const actor = GRAASP_ACTOR;
             await fn(item, actor, { log: undefined });
             expect(getObject).toHaveBeenCalled();

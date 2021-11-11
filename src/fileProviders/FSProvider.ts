@@ -3,7 +3,11 @@ import { GraaspFileItemOptions } from 'graasp-plugin-file-item';
 import { Sharp } from 'sharp';
 import FileOperations from './FileOperations';
 import { createFsFolder, createFsKey } from '../utils/helpers';
-import { readFile } from 'fs/promises';
+import { readFile, access } from 'fs/promises';
+import contentDisposition from 'content-disposition';
+import fs from 'fs';
+import { mimetype } from '../utils/constants';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 export class FSProvider implements FileOperations {
   private readonly options: GraaspFileItemOptions;
@@ -16,6 +20,40 @@ export class FSProvider implements FileOperations {
 
   async getObject({ key }: { key: string }): Promise<Buffer> {
     return await readFile(key);
+  }
+
+  async getObjectUrl({
+    reply,
+    storageRootPath,
+    pluginStoragePrefix,
+    id,
+    size,
+  }) {
+    // ensure the file exists, if not throw error
+    try {
+      await access(
+        `${storageRootPath}/${createFsKey(pluginStoragePrefix, id, size)}`,
+      );
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return reply
+          .status(StatusCodes.NOT_FOUND)
+          .send(ReasonPhrases.NOT_FOUND);
+      }
+      throw e;
+    }
+
+    // Get thumbnail path
+    reply.type(mimetype);
+    // this header will make the browser download the file with 'name' instead of
+    // simply opening it and showing it
+    reply.header(
+      'Content-Disposition',
+      contentDisposition(`thumb-${id}-${size}`),
+    );
+    return fs.createReadStream(
+      `${storageRootPath}/${createFsKey(pluginStoragePrefix, id, size)}`,
+    );
   }
 
   async copyObject({
