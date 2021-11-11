@@ -12,10 +12,9 @@ import sharp from 'sharp';
 
 import { upload, download } from './schema';
 import { S3Provider } from './fileProviders/s3Provider';
-import { createFsKey, createS3Key } from './utils/helpers';
-import { format, mimetype, sizes, sizes_names } from './utils/constants';
+import { format, sizes, sizes_names } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
-import { ITEM_TYPE } from 'graasp-plugin-file-item/dist/plugin';
+import { ITEM_TYPE } from 'graasp-plugin-file-item';
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 
@@ -90,6 +89,55 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         }),
       );
     };
+
+
+
+
+    if (appHook) {
+      const {
+        items: { taskManager },
+      } = fastify;
+
+      const createItemTaskName = taskManager.getCreateTaskName();
+      runner.setTaskPostHookHandler<Item<AppExtra>>(
+        createItemTaskName,
+        async (item, actor, { log }) => {
+
+          const {
+            id,
+            type: itemType,
+            extra: { app },
+          } = item;
+          if (
+            itemType !== 'app'
+          ) {
+            return;
+          }
+
+          let appThumbnailKey = 1
+          if (enableS3FileItemPlugin) {
+            appThumbnailKey = 2
+          }
+          else {
+            appThumbnailKey = 3
+
+          }
+
+          await createAndSaveThumbnails(
+            id,
+            await instance.getObject({
+              key: `${storageRootPath}/${file.path}`,
+            }),
+            actor,
+            log,
+          );
+        }
+      );
+    }
+
+
+
+
 
     if (enableItemsHooks) {
       const {
