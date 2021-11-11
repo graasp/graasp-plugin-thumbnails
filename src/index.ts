@@ -1,4 +1,3 @@
-import contentDisposition from 'content-disposition';
 import { FastifyLoggerInstance, FastifyPluginAsync } from 'fastify';
 import fastifyMultipart from 'fastify-multipart';
 import { Actor, IdParam, Item, Member, Task } from 'graasp';
@@ -22,11 +21,15 @@ declare module 'fastify' {
   interface FastifyInstance {
     s3FileItemPluginOptions?: GraaspS3FileItemOptions;
     fileItemPluginOptions?: GraaspFileItemOptions;
+    appService?: {
+      getAppIdFromUrl?: Function
+    };
   }
 }
 
 export interface GraaspThumbnailsOptions {
   enableS3FileItemPlugin?: boolean;
+  enableAppsHooks?: boolean;
   enableItemsHooks?: boolean;
   pluginStoragePrefix: string;
 
@@ -45,10 +48,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
-  const { taskRunner: runner } = fastify;
+  const { taskRunner: runner, db, appService } = fastify;
 
-  const { enableS3FileItemPlugin, enableItemsHooks, pluginStoragePrefix } =
-    options;
+  const {
+    enableS3FileItemPlugin,
+    enableItemsHooks,
+    enableAppsHooks,
+    pluginStoragePrefix,
+  } = options;
 
   fastify.register(async function (fastify) {
     fastify.register(fastifyMultipart, {
@@ -90,54 +97,48 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       );
     };
 
+    const appTemplateThumbnailPath = 'apps/templates/';
 
-
-
-    if (appHook) {
+    if (enableAppsHooks) {
       const {
         items: { taskManager },
       } = fastify;
 
       const createItemTaskName = taskManager.getCreateTaskName();
-      runner.setTaskPostHookHandler<Item<AppExtra>>(
+      runner.setTaskPostHookHandler<Item>(
         createItemTaskName,
         async (item, actor, { log }) => {
-
-          const {
-            id,
-            type: itemType,
-            extra: { app },
-          } = item;
-          if (
-            itemType !== 'app'
-          ) {
+          const { id, type: itemType, extra } = item;
+          if (itemType !== 'app') {
             return;
           }
 
-          let appThumbnailKey = 1
-          if (enableS3FileItemPlugin) {
-            appThumbnailKey = 2
-          }
-          else {
-            appThumbnailKey = 3
+          // todo: adding an app from existing apps use create item given an url
+          // so the create-item posthook does not have a clue about the app id
+          // should these apps use some reference instead of the link ?
+          // -> this would leads to app used by reference in db / app used with a link and not in db
+          // ----> third parties apps created with a don't have an entry in db / no access to token -> link only?
+          // but could use a right publisher and right app_id without being the right url <- not in list but valid
+          const appId = appService.getAppIdFromUrl(extra, db.pool);
 
+          let appThumbnailKey = 1;
+          if (enableS3FileItemPlugin) {
+            appThumbnailKey = 2;
+          } else {
+            appThumbnailKey = 3;
           }
 
           await createAndSaveThumbnails(
             id,
             await instance.getObject({
-              key: `${storageRootPath}/${file.path}`,
+              key: `${storageRootPath}/${appTemplateThumbnailPath}/${appId}`,
             }),
             actor,
             log,
           );
-        }
+        },
       );
     }
-
-
-
-
 
     if (enableItemsHooks) {
       const {
