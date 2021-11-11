@@ -46,11 +46,9 @@ export class S3Provider implements FileOperations {
   async getObjectUrl({ reply, pluginStoragePrefix, id, size }) {
     const { s3Bucket: Bucket } = this.options;
     const key = createS3Key(pluginStoragePrefix, id, size);
-
     try {
       // check whether thumbnail exists
       await this.s3Instance.headObject({ Bucket, Key: key }).promise();
-
       // return key
       // todo: return image stream directly?
       reply.send({ key }).status(StatusCodes.OK);

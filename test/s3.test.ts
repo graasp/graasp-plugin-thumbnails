@@ -1,5 +1,6 @@
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
+import S3 from 'aws-sdk/clients/s3';
 import { StatusCodes } from 'http-status-codes';
 import {
   TaskRunner,
@@ -7,7 +8,13 @@ import {
   ItemMembershipTaskManager,
 } from 'graasp-test';
 import build from './app';
-import { ENABLE_S3, GET_ITEM_ID, IMAGE_PATH, ITEM_S3_KEY } from './constants';
+import {
+  ENABLE_S3,
+  GET_ITEM_ID,
+  IMAGE_PATH,
+  ITEM_S3_KEY,
+  S3_OPTIONS,
+} from './constants';
 import { sizes_names } from '../src/utils/constants';
 import { mockcreateGetOfItemTaskSequence } from './mock';
 import { S3Provider } from '../src/fileProviders/s3Provider';
@@ -36,6 +43,12 @@ describe('Plugin Tests', () => {
         runner,
         membership,
         options: ENABLE_S3,
+        S3Options: {
+          s3Instance: {
+            headObject: jest.fn(() => ({ promise: jest.fn() })),
+          } as {} as S3,
+          ...S3_OPTIONS,
+        },
       });
 
       for (const size of sizes_names) {
@@ -55,6 +68,12 @@ describe('Plugin Tests', () => {
         runner,
         membership,
         options: { ...ENABLE_S3, pluginStoragePrefix: 'files' },
+        S3Options: {
+          s3Instance: {
+            headObject: jest.fn(() => ({ promise: jest.fn() })),
+          } as {} as S3,
+          ...S3_OPTIONS,
+        },
       });
 
       for (const size of sizes_names) {
