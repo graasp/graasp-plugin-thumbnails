@@ -5,6 +5,7 @@ import FileOperations from './FileOperations';
 import { mimetype, sizes_names } from '../utils/constants';
 import { createS3Key } from '../utils/helpers';
 import contentDisposition from 'content-disposition';
+import { ReasonPhrases, StatusCodes } from 'http-status-codes';
 
 export class S3Provider implements FileOperations {
   private readonly options: GraaspS3FileItemOptions;
@@ -32,12 +33,42 @@ export class S3Provider implements FileOperations {
       });
   }
 
-  async copyObject(
-    originalId: string,
-    newId: string,
-    size: string,
-    memberId: string,
-  ): Promise<void> {
+  async getObject({ key }: { key: string }): Promise<Buffer> {
+    const { s3Bucket: bucket } = this.options;
+
+    const params = {
+      Bucket: bucket,
+      Key: key,
+    };
+    return (await this.s3Instance.getObject(params).promise()).Body as Buffer;
+  }
+
+  async getObjectUrl({ reply, pluginStoragePrefix, id, size }) {
+    const { s3Bucket: Bucket } = this.options;
+    const key = createS3Key(pluginStoragePrefix, id, size);
+    try {
+      // check whether thumbnail exists
+      await this.s3Instance.headObject({ Bucket, Key: key }).promise();
+      // return key
+      // todo: return image stream directly?
+      reply.send({ key }).status(StatusCodes.OK);
+    } catch (e) {
+      // todo: check error
+      reply.status(StatusCodes.NOT_FOUND).send(ReasonPhrases.NOT_FOUND);
+    }
+  }
+
+  async copyObject({
+    originalId,
+    newId,
+    size,
+    memberId,
+  }: {
+    originalId: string;
+    newId: string;
+    size: string;
+    memberId: string;
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
@@ -49,16 +80,16 @@ export class S3Provider implements FileOperations {
         item: newId,
       },
       MetadataDirective: 'REPLACE',
-      ContentDisposition: contentDisposition(`tumb-${newId}`),
+      ContentDisposition: contentDisposition(`thumb-${newId}-${size}`),
       ContentType: mimetype,
       CacheControl: 'no-cache', // TODO: improve?
     };
 
     // TODO: the Cache-Control policy metadata is lost. try to set a global policy for the bucket in aws.
-    await this.s3Instance.copyObject(params).promise();
+    await this.s3Instance.getObject(params).promise();
   }
 
-  async deleteItem(id: string): Promise<void> {
+  async deleteItem({ id }: { id: string }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     await Promise.all(
@@ -73,12 +104,17 @@ export class S3Provider implements FileOperations {
     );
   }
 
-  async putObject(
-    id: string,
-    object: Sharp,
-    size: string,
-    memberId: string,
-  ): Promise<void> {
+  async putObject({
+    id,
+    object,
+    size,
+    memberId,
+  }: {
+    id: string;
+    object: Sharp;
+    size: string;
+    memberId: string;
+  }): Promise<void> {
     const { s3Bucket: bucket } = this.options;
 
     const params = {
