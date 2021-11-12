@@ -6,6 +6,8 @@ import {
   S3FileItemExtra,
 } from 'graasp-plugin-s3-file-item';
 import { GraaspFileItemOptions, FileItemExtra } from 'graasp-plugin-file-item';
+// todo: export from plugin directly
+import { ITEM_TYPE as FILE_ITEM_TYPE } from 'graasp-plugin-file-item/dist/plugin';
 import { StatusCodes, ReasonPhrases } from 'http-status-codes';
 import sharp from 'sharp';
 
@@ -13,9 +15,13 @@ import { upload, download } from './schema';
 import { S3Provider } from './fileProviders/s3Provider';
 import { format, sizes, sizes_names } from './utils/constants';
 import { FSProvider } from './fileProviders/FSProvider';
-import { ITEM_TYPE } from 'graasp-plugin-file-item';
 
 const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
+
+// todo: export from apps -> dependecy loop 
+const APP_ITEM_TYPE = 'app'
+
+const APP_TEMPLATE_THUMBNAIL_PATH = 'apps/templates/';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -97,7 +103,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       );
     };
 
-    const appTemplateThumbnailPath = 'apps/templates/';
 
     if (enableAppsHooks) {
       const {
@@ -109,7 +114,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         createItemTaskName,
         async (item, actor, { log }) => {
           const { id, type: itemType, extra } = item;
-          if (itemType !== 'app') {
+          if (itemType !== APP_ITEM_TYPE) {
             return;
           }
 
@@ -131,7 +136,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           await createAndSaveThumbnails(
             id,
             await instance.getObject({
-              key: `${storageRootPath}/${appTemplateThumbnailPath}/${appId}`,
+              key: `${storageRootPath}/${APP_TEMPLATE_THUMBNAIL_PATH}/${appId}`,
             }),
             actor,
             log,
@@ -158,7 +163,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               extra: { s3File },
             } = item;
             if (
-              itemType !== ITEM_TYPE ||
+              itemType !== FILE_ITEM_TYPE ||
               !s3File ||
               !s3File.contenttype.startsWith('image')
             )
@@ -178,7 +183,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           async (item, actor, { log }) => {
             const { id, type: itemType, extra: { file } = {} } = item;
             if (
-              itemType !== ITEM_TYPE ||
+              itemType !== FILE_ITEM_TYPE ||
               !file ||
               !file.mimetype.startsWith('image')
             )
