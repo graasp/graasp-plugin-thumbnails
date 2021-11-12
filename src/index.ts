@@ -21,7 +21,7 @@ const DEFAULT_MAX_FILE_SIZE = 1024 * 1024 * 5; // 5MB
 // todo: export from apps -> dependecy loop 
 const APP_ITEM_TYPE = 'app'
 
-const APP_TEMPLATE_THUMBNAIL_PATH = 'apps/templates/';
+const APP_TEMPLATE_THUMBNAIL_PATH = 'apps/templates';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -125,13 +125,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           // ----> third parties apps created with a don't have an entry in db / no access to token -> link only?
           // but could use a right publisher and right app_id without being the right url <- not in list but valid
           const appId = appService.getAppIdFromUrl(extra, db.pool);
-
-          let appThumbnailKey = 1;
-          if (enableS3FileItemPlugin) {
-            appThumbnailKey = 2;
-          } else {
-            appThumbnailKey = 3;
-          }
 
           await createAndSaveThumbnails(
             id,
