@@ -1071,8 +1071,8 @@ __metadata:
   linkType: hard
 
 "aws-sdk@npm:^2.793.0":
-  version: 2.1027.0
-  resolution: "aws-sdk@npm:2.1027.0"
+  version: 2.1028.0
+  resolution: "aws-sdk@npm:2.1028.0"
   dependencies:
     buffer: 4.9.2
     events: 1.1.1
@@ -1083,7 +1083,7 @@ __metadata:
     url: 0.10.3
     uuid: 3.3.2
     xml2js: 0.4.19
-  checksum: a878ac474c5b9240ba46839242f6bccd195c8d77fbc1a941c3f73c0a6aeb42b53b895bf305da6cfcf33fda67cc53f2f3c23956e6a026d5e007c330611f2eac9d
+  checksum: e31010d77508c786b5a1cacad0cde1bd188d3e705ae5988113db112bc535a4b54965c5fa477d3794022a5e6f92e936507c623bb9b8ed542a7dea94ce7e159355
   languageName: node
   linkType: hard
 
@@ -2279,44 +2279,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-file-upload-limiter@git://github.com/graasp/graasp-file-upload-limiter.git#yarn":
+"graasp-file-upload-limiter@git://github.com/graasp/graasp-file-upload-limiter.git#10/yarn":
   version: 0.1.0
-  resolution: "graasp-file-upload-limiter@git://github.com/graasp/graasp-file-upload-limiter.git#commit=c3e8ee7f0d62d8aca0691f375f9be812762985ce"
+  resolution: "graasp-file-upload-limiter@git://github.com/graasp/graasp-file-upload-limiter.git#commit=d89f61efd35edacc2d67a7e6a27288cfa1bec008"
   dependencies:
     slonik: ^23.8.0
-  checksum: 0c64b1540d9e4ed9fd26c40746a7198ed812a92f0e612c7f4f5b080a3d7fd523de84e14dacd5d273b4640fe992504ad49eba113b6e3531e8259465063fe7de3d
+  checksum: c9a4b35e1121de104e353472de2f0ba1ab422f9f2771e796ede3c7ff36e21619b672c57814ff2410abc27eb975a059b4d5def709bb3dfed1e54188d2a33cca3c
   languageName: node
   linkType: hard
 
-"graasp-file-upload-limiter@github:graasp/graasp-file-upload-limiter#yarn":
+"graasp-file-upload-limiter@github:graasp/graasp-file-upload-limiter#10/yarn":
   version: 0.1.0
-  resolution: "graasp-file-upload-limiter@https://github.com/graasp/graasp-file-upload-limiter.git#commit=c3e8ee7f0d62d8aca0691f375f9be812762985ce"
+  resolution: "graasp-file-upload-limiter@https://github.com/graasp/graasp-file-upload-limiter.git#commit=d89f61efd35edacc2d67a7e6a27288cfa1bec008"
   dependencies:
     slonik: ^23.8.0
-  checksum: 0c64b1540d9e4ed9fd26c40746a7198ed812a92f0e612c7f4f5b080a3d7fd523de84e14dacd5d273b4640fe992504ad49eba113b6e3531e8259465063fe7de3d
+  checksum: c9a4b35e1121de104e353472de2f0ba1ab422f9f2771e796ede3c7ff36e21619b672c57814ff2410abc27eb975a059b4d5def709bb3dfed1e54188d2a33cca3c
   languageName: node
   linkType: hard
 
-"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#yarn":
+"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#16/yarn":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=ab8dbcd04c729234ba8a68884559f5d6b5d68f79"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=5ed4bbb7f661d26fd7389dd4211eb08fff88bde7"
   dependencies:
     content-disposition: 0.5.3
     fastify-multipart: 4.0.0
-    graasp-file-upload-limiter: "git://github.com/graasp/graasp-file-upload-limiter.git#yarn"
+    graasp-file-upload-limiter: "git://github.com/graasp/graasp-file-upload-limiter.git#10/yarn"
     http-status-codes: 2.1.4
-  checksum: 47b23391152530b25e20871f9e73b667be48a68d3640644763ae6f25efefb5431f7f2508770857b30bc7cffdbbe75f48e501a7e138dab66f7ed5be3f4544c85c
+  checksum: 68f9b422c712c9d6a60595eba154e74a03fb00d574ceb1ac9a1f42cd2173272bdad812dbdccb0be695e9ae6250490c82e090b6bf2044642d53301b10d99cb705
   languageName: node
   linkType: hard
 
-"graasp-plugin-s3-file-item@github:graasp/graasp-plugin-s3-file-item#yarn":
+"graasp-plugin-s3-file-item@github:graasp/graasp-plugin-s3-file-item#12/yarn":
   version: 0.1.0
-  resolution: "graasp-plugin-s3-file-item@https://github.com/graasp/graasp-plugin-s3-file-item.git#commit=373f5705744c6fb2351f425fa7830072c0e0d149"
+  resolution: "graasp-plugin-s3-file-item@https://github.com/graasp/graasp-plugin-s3-file-item.git#commit=830b9a8e34c517d58a2e3e60430452393ab48404"
   dependencies:
     aws-sdk: ^2.793.0
-    graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter#yarn"
+    graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter#10/yarn"
     http-status-codes: ^2.1.4
-  checksum: 27e6ef422b602713bdcb9cc4b93d13d524bee64710d727c735b9ee4e6d683b25ab31733302a0d6c5f664a7f4eacf30784051ad63c8e23d6c54b862961d5242e7
+  checksum: aef8cd4d2492ff597b341b70eaadb4c74c4b7300d4f62def4dbf03070f246a8d51a5b031cc9cfc8bbf25bf7c8ea9fe0b60a036c020822b05189d017dcb7d9188
   languageName: node
   linkType: hard
 
@@ -2332,9 +2332,9 @@ __metadata:
     content-disposition: 0.5.3
     fastify: 3.8.0
     fastify-multipart: 4.0.0
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#yarn"
-    graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item#yarn"
-    graasp-test: "github:graasp/graasp-test#yarn"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#16/yarn"
+    graasp-plugin-s3-file-item: "github:graasp/graasp-plugin-s3-file-item#12/yarn"
+    graasp-test: "github:graasp/graasp-test#5/yarn"
     http-status-codes: 2.1.4
     jest: 27.3.0
     prettier: 2.4.1
@@ -2345,7 +2345,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"graasp-test@github:graasp/graasp-test#yarn":
+"graasp-test@github:graasp/graasp-test#5/yarn":
   version: 0.1.0
   resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=ef12a8be90240f564b3935585d84826456718ba3"
   checksum: c68a8ffeddc816657dcac6e7db809258ab44dacc32649ebaa092ae231b5ac557c53657f991ff74b3862a1899093448e303fcdcd79e8c61cf93241f6df092d74b
@@ -4426,8 +4426,8 @@ __metadata:
   linkType: hard
 
 "roarr@npm:^7.0.3":
-  version: 7.5.0
-  resolution: "roarr@npm:7.5.0"
+  version: 7.7.0
+  resolution: "roarr@npm:7.7.0"
   dependencies:
     boolean: ^3.1.4
     fast-json-stringify: ^2.7.10
@@ -4436,7 +4436,7 @@ __metadata:
     is-circular: ^1.0.2
     json-stringify-safe: ^5.0.1
     semver-compare: ^1.0.0
-  checksum: 6cec62f43611f45a99d1fa79a25586eb9928ce92c8f8222ad2b725ce0bdc0a6624c965098477281979b731bebf61fbed2bfecac16cf5492fd468f1a2dfd3bd03
+  checksum: e563ea073253351f75386c4866efea15827b642954ad482d1acb817f4e498d401db9c211953ccd7daeb143c5a2abbba1f11a99112e01893808fc38b61d0f98e9
   languageName: node
   linkType: hard
 
