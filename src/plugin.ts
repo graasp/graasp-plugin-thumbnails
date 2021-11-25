@@ -1,7 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Actor, Item, UnknownExtra } from 'graasp';
 import sharp from 'sharp';
-
 import basePlugin, { FileTaskManager } from 'graasp-plugin-file';
 
 import {
@@ -14,10 +13,8 @@ import {
   GraaspS3FileItemOptions,
 } from 'graasp-plugin-file';
 
-import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT } from './utils/constants';
+import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT, THUMBNAIL_PREFIX } from './utils/constants';
 import { buildFilePathFromId } from './utils/helpers';
-
-const THUMBNAIL_PREFIX = '/thumbnails';
 
 const FILE_ITEM_TYPES = {
   S3: 's3File',
@@ -26,6 +23,8 @@ const FILE_ITEM_TYPES = {
 
 export interface GraaspThumbnailsOptions {
   serviceMethod: ServiceMethod;
+
+  pathPrefix: string;
 
   // TODO: use prehook in uploadPrehook.... for public
   uploadPreHookTasks: UploadPreHookTasksFunction;
@@ -44,16 +43,22 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
-  const { serviceMethod, serviceOptions, appsTemplateRoot } = options;
+  const { serviceMethod, serviceOptions, appsTemplateRoot, pathPrefix } = options;
   const {
     items: { taskManager: itemTaskManager },
     taskRunner: runner,
     log: defaultLogger,
   } = fastify;
 
+  if(!pathPrefix.endsWith('/') || !pathPrefix.startsWith('/')) {
+    throw new Error(
+      'graasp-plugin-file: local storage service root path is malformed',
+    );
+  }
+
   const buildFilePath = (itemId: string, filename: string) => {
     const filepath = buildFilePathFromId(itemId);
-    return `${THUMBNAIL_PREFIX}/${filepath}/${filename}`;
+    return `${THUMBNAIL_PREFIX}${pathPrefix}${filepath}/${filename}`;
   };
 
   const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
