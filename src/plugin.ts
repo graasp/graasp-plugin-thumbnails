@@ -109,6 +109,23 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     // use function as pre/post hook to avoid infinite loop with thumbnails
     uploadPreHookTasks: options.uploadPreHookTasks,
 
+    uploadPostHookTasks: async ({ file, itemId }, { member }) => {
+      const thumbnails = THUMBNAIL_SIZES.map(({ name, width }) => ({
+        size: name,
+        image: sharp(file).resize({ width }).toFormat(THUMBNAIL_FORMAT),
+      }));
+
+      return await Promise.all(
+        thumbnails.map(async ({ size: filename, image }) =>
+          fileTaskManager.createUploadFileTask(member, {
+            file: await image.toBuffer(),
+            filename: buildFilePath(itemId, filename),
+            mimetype: THUMBNAIL_FORMAT,
+          }),
+        ),
+      );
+    },
+
     downloadPreHookTasks: options.downloadPreHookTasks,
   });
 

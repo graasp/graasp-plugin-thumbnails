@@ -1,5 +1,8 @@
 import fastify, { FastifyInstance } from 'fastify';
-import { GraaspS3FileItemOptions, GraaspFileItemOptions } from 'graasp-plugin-file';
+import {
+  GraaspS3FileItemOptions,
+  GraaspFileItemOptions,
+} from 'graasp-plugin-file';
 import {
   ItemMembershipTaskManager,
   ItemTaskManager,
