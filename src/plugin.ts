@@ -13,13 +13,25 @@ import {
   GraaspS3FileItemOptions,
 } from 'graasp-plugin-file';
 
-import { THUMBNAIL_SIZES, THUMBNAIL_FORMAT, THUMBNAIL_PREFIX } from './utils/constants';
+import {
+  THUMBNAIL_SIZES,
+  THUMBNAIL_FORMAT,
+  THUMBNAIL_PREFIX,
+} from './utils/constants';
 import { buildFilePathFromId } from './utils/helpers';
 
 const FILE_ITEM_TYPES = {
   S3: 's3File',
   LOCAL: 'file',
 };
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    appService?: {
+      getAppIdFromUrl?: Function;
+    };
+  }
+}
 
 export interface GraaspThumbnailsOptions {
   serviceMethod: ServiceMethod;
@@ -30,9 +42,10 @@ export interface GraaspThumbnailsOptions {
   uploadPreHookTasks: UploadPreHookTasksFunction;
   downloadPreHookTasks: DownloadPreHookTasksFunction;
 
-  // pluginStoragePrefix: string;
-  appsTemplateRoot: string; // apps/template
   enableItemsHooks?: boolean;
+  enableAppsHooks?: {
+    appsTemplateRoot: string; // apps/template
+  };
 
   serviceOptions: {
     s3: GraaspS3FileItemOptions;
@@ -44,14 +57,21 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
-  const { serviceMethod, serviceOptions, appsTemplateRoot, pathPrefix, enableItemsHooks } = options;
+  const {
+    serviceMethod,
+    serviceOptions,
+    pathPrefix,
+    enableItemsHooks,
+    enableAppsHooks,
+  } = options;
   const {
     items: { taskManager: itemTaskManager },
+    appService,
     taskRunner: runner,
     log: defaultLogger,
   } = fastify;
 
-  if(!pathPrefix.endsWith('/') || !pathPrefix.startsWith('/')) {
+  if (!pathPrefix.endsWith('/') || !pathPrefix.startsWith('/')) {
     throw new Error(
       'graasp-plugin-file: local storage service root path is malformed',
     );
@@ -128,8 +148,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     downloadPreHookTasks: options.downloadPreHookTasks,
   });
 
-
-  if(enableItemsHooks){
+  if (enableItemsHooks) {
     // TODO
     const itemHasThumbnails = async (id: string) => {
       // check item has thumbnails
@@ -215,27 +234,48 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
           await runner.runMultiple(tasks, log);
         }
+      },
+    );
+  }
 
-        // TODO: get app template thumbnails and copy in item
-        else if (type === 'app') {
-          const appId = 'wefsdv'; // TODO: get app Id
+  if (enableAppsHooks) {
+    interface AppItemExtra extends UnknownExtra {
+      app: {
+        url: string;
+        settings: UnknownExtra;
+      };
+    }
+
+    const ITEM_APP_TYPE = 'app';
+
+    const { appsTemplateRoot } = enableAppsHooks;
+
+    const buildAppsTemplatesRoot = (appId: string, name: string) =>
+      `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
+
+    const createTaskName = itemTaskManager.getCreateTaskName();
+    runner.setTaskPostHookHandler<Item>(
+      createTaskName,
+      async (item, actor, { log = defaultLogger }) => {
+        const { id, type, extra = {} } = item;
+
+        // generate automatically thumbnails for apps
+        if (type === ITEM_APP_TYPE) {
+          const appId = appService.getAppIdFromUrl(
+            (extra as AppItemExtra).app.url,
+          );
 
           // copy thumbnails of app template for copied item
-          const tasks = [];
-          for (const { name } of THUMBNAIL_SIZES) {
-            const newFilePath = buildFilePath(id, name);
-            const originalPath = `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
-
-            const task = fileTaskManager.createCopyFileTask(actor, {
+          const tasks = THUMBNAIL_SIZES.map(({ name }) =>
+            fileTaskManager.createCopyFileTask(actor, {
               newId: id,
-              originalPath,
-              newFilePath,
+              originalPath: buildAppsTemplatesRoot(appId, name),
+              newFilePath: buildFilePath(id, name),
               mimetype: THUMBNAIL_FORMAT,
-            });
-            tasks.push(task);
-          }
-          // no need to wait
-          runner.runMultiple(tasks, log);
+            }),
+          );
+
+          await runner.runMultiple(tasks, log);
         }
       },
     );

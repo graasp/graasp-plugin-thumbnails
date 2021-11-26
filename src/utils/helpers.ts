@@ -9,7 +9,11 @@ export const buildFilePathFromId = (id: string) =>
     .match(/.{1,8}/g)
     .join('/');
 
-export const buildFilePath = (itemId: string, pathPrefix: string, filename: string) => {
+export const buildFilePath = (
+  itemId: string,
+  pathPrefix: string,
+  filename: string,
+) => {
   const filepath = buildFilePathFromId(itemId);
   return `${THUMBNAIL_PREFIX}${pathPrefix}${filepath}/${filename}`;
 };
