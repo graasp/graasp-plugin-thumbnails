@@ -32,6 +32,7 @@ export interface GraaspThumbnailsOptions {
 
   // pluginStoragePrefix: string;
   appsTemplateRoot: string; // apps/template
+  enableItemsHooks?: boolean;
 
   serviceOptions: {
     s3: GraaspS3FileItemOptions;
@@ -43,7 +44,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
-  const { serviceMethod, serviceOptions, appsTemplateRoot, pathPrefix } = options;
+  const { serviceMethod, serviceOptions, appsTemplateRoot, pathPrefix, enableItemsHooks } = options;
   const {
     items: { taskManager: itemTaskManager },
     taskRunner: runner,
@@ -56,18 +57,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     );
   }
 
+  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
+
   const buildFilePath = (itemId: string, filename: string) => {
     const filepath = buildFilePathFromId(itemId);
     return `${THUMBNAIL_PREFIX}${pathPrefix}${filepath}/${filename}`;
-  };
-
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
-
-  // TODO
-  const itemHasThumbnails = async (id: string) => {
-    // check item has thumbnails
-    const hasThumbnails = true;
-    return hasThumbnails;
   };
 
   const getFileExtra = (
@@ -134,108 +128,118 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     downloadPreHookTasks: options.downloadPreHookTasks,
   });
 
-  const deleteFileTaskName = itemTaskManager.getDeleteTaskName();
-  runner.setTaskPostHookHandler<Item>(
-    deleteFileTaskName,
-    async ({ id, type }, actor, { log = defaultLogger }) => {
-      //  check item has thumbnails
-      if (await itemHasThumbnails(id)) {
-        // delete thumbnails for item
-        // TODO: optimize
-        const tasks = [];
-        for (const { name } of THUMBNAIL_SIZES) {
-          const filepath = buildFilePath(id, name);
-          const task = fileTaskManager.createDeleteFileTask(actor, {
-            filepath,
-          });
-          tasks.push(task);
+
+  if(enableItemsHooks){
+    // TODO
+    const itemHasThumbnails = async (id: string) => {
+      // check item has thumbnails
+      const hasThumbnails = true;
+      return hasThumbnails;
+    };
+
+    const deleteFileTaskName = itemTaskManager.getDeleteTaskName();
+    runner.setTaskPostHookHandler<Item>(
+      deleteFileTaskName,
+      async ({ id, type }, actor, { log = defaultLogger }) => {
+        //  check item has thumbnails
+        if (await itemHasThumbnails(id)) {
+          // delete thumbnails for item
+          // TODO: optimize
+          const tasks = [];
+          for (const { name } of THUMBNAIL_SIZES) {
+            const filepath = buildFilePath(id, name);
+            const task = fileTaskManager.createDeleteFileTask(actor, {
+              filepath,
+            });
+            tasks.push(task);
+          }
+          // no need to wait for thumbnails to be deleted
+          runner.runMultiple(tasks, log);
         }
-        // no need to wait for thumbnails to be deleted
-        runner.runMultiple(tasks, log);
-      }
-    },
-  );
+      },
+    );
 
-  const copyItemTaskName = itemTaskManager.getCopyTaskName();
-  runner.setTaskPostHookHandler<Item>(
-    copyItemTaskName,
-    async (item, actor, { log = defaultLogger }, { original }) => {
-      const { id } = item; // full copy with new `id`
+    const copyItemTaskName = itemTaskManager.getCopyTaskName();
+    runner.setTaskPostHookHandler<Item>(
+      copyItemTaskName,
+      async (item, actor, { log = defaultLogger }, { original }) => {
+        const { id } = item; // full copy with new `id`
 
-      // TODO: check item has thumbnails
-      if (await itemHasThumbnails(id)) {
-        // copy thumbnails for copied item
-        const tasks = [];
-        for (const { name: filename } of THUMBNAIL_SIZES) {
-          const originalPath = buildFilePath(original.id, filename);
-          const newFilePath = buildFilePath(id, filename);
+        // TODO: check item has thumbnails
+        if (await itemHasThumbnails(id)) {
+          // copy thumbnails for copied item
+          const tasks = [];
+          for (const { name: filename } of THUMBNAIL_SIZES) {
+            const originalPath = buildFilePath(original.id, filename);
+            const newFilePath = buildFilePath(id, filename);
 
-          const task = fileTaskManager.createCopyFileTask(actor, {
-            newId: id,
-            originalPath,
-            newFilePath,
-            mimetype: THUMBNAIL_FORMAT,
-          });
-          tasks.push(task);
-        }
-        // no need to wait
-        runner.runMultiple(tasks, log);
-      }
-    },
-  );
-
-  const createTaskName = itemTaskManager.getCreateTaskName();
-  runner.setTaskPostHookHandler<Item>(
-    createTaskName,
-    async (item, actor, { log = defaultLogger }) => {
-      const { id, type, extra = {} } = item;
-
-      // generate automatically thumbnails for s3file and file images
-      if (
-        (type === FILE_ITEM_TYPES.S3 &&
-          (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
-        (type === FILE_ITEM_TYPES.LOCAL &&
-          (extra as FileItemExtra)?.file?.mimetype.startsWith('image'))
-      ) {
-        const thumbnails = await createThumbnails(item, actor);
-        // create thumbnails for new image
-
-        const tasks = await Promise.all(
-          thumbnails.map(async ({ size: filename, image }) =>
-            fileTaskManager.createUploadFileTask(actor, {
-              file: await image.toBuffer(),
-              filename: buildFilePath(id, filename),
+            const task = fileTaskManager.createCopyFileTask(actor, {
+              newId: id,
+              originalPath,
+              newFilePath,
               mimetype: THUMBNAIL_FORMAT,
-            }),
-          ),
-        );
-
-        await runner.runMultiple(tasks, log);
-      }
-
-      // TODO: get app template thumbnails and copy in item
-      else if (type === 'app') {
-        const appId = 'wefsdv'; // TODO: get app Id
-
-        // copy thumbnails of app template for copied item
-        const tasks = [];
-        for (const { name } of THUMBNAIL_SIZES) {
-          const newFilePath = buildFilePath(id, name);
-          const originalPath = `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
-
-          const task = fileTaskManager.createCopyFileTask(actor, {
-            newId: id,
-            originalPath,
-            newFilePath,
-            mimetype: THUMBNAIL_FORMAT,
-          });
-          tasks.push(task);
+            });
+            tasks.push(task);
+          }
+          // no need to wait
+          runner.runMultiple(tasks, log);
         }
-        // no need to wait
-        runner.runMultiple(tasks, log);
-      }
-    },
-  );
+      },
+    );
+
+    const createTaskName = itemTaskManager.getCreateTaskName();
+    runner.setTaskPostHookHandler<Item>(
+      createTaskName,
+      async (item, actor, { log = defaultLogger }) => {
+        const { id, type, extra = {} } = item;
+
+        // generate automatically thumbnails for s3file and file images
+        if (
+          (type === FILE_ITEM_TYPES.S3 &&
+            (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
+          (type === FILE_ITEM_TYPES.LOCAL &&
+            (extra as FileItemExtra)?.file?.mimetype.startsWith('image'))
+        ) {
+          const thumbnails = await createThumbnails(item, actor);
+          // create thumbnails for new image
+
+          const tasks = await Promise.all(
+            thumbnails.map(async ({ size: filename, image }) =>
+              fileTaskManager.createUploadFileTask(actor, {
+                file: await image.toBuffer(),
+                filename: buildFilePath(id, filename),
+                mimetype: THUMBNAIL_FORMAT,
+              }),
+            ),
+          );
+
+          await runner.runMultiple(tasks, log);
+        }
+
+        // TODO: get app template thumbnails and copy in item
+        else if (type === 'app') {
+          const appId = 'wefsdv'; // TODO: get app Id
+
+          // copy thumbnails of app template for copied item
+          const tasks = [];
+          for (const { name } of THUMBNAIL_SIZES) {
+            const newFilePath = buildFilePath(id, name);
+            const originalPath = `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
+
+            const task = fileTaskManager.createCopyFileTask(actor, {
+              newId: id,
+              originalPath,
+              newFilePath,
+              mimetype: THUMBNAIL_FORMAT,
+            });
+            tasks.push(task);
+          }
+          // no need to wait
+          runner.runMultiple(tasks, log);
+        }
+      },
+    );
+  }
 };
 
 export default plugin;
