@@ -6,7 +6,7 @@ node_modules/
 coverage/
 
 # tests
-test/files
+test/tmp
 
 # yarn
 .yarn/*

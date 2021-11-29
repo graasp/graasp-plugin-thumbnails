@@ -1,15 +1,10 @@
 import fastify, { FastifyInstance } from 'fastify';
 import {
-  GraaspS3FileItemOptions,
-  GraaspFileItemOptions,
-} from 'graasp-plugin-file';
-import {
-  ItemMembershipTaskManager,
   ItemTaskManager,
   TaskRunner,
 } from 'graasp-test';
 import plugin, { GraaspThumbnailsOptions } from '../src/index';
-import { DISABLE_S3, GRAASP_ACTOR, ROOT_PATH, S3_OPTIONS } from './constants';
+import { GRAASP_ACTOR, } from './constants';
 
 const schemas = {
   $id: 'http://graasp.org/',
@@ -32,17 +27,11 @@ const schemas = {
 
 const build = async ({
   runner,
-  taskManager,
-  membership,
-  S3Options,
-  FSOptions,
+  itemTaskManager,
   options,
 }: {
   runner: TaskRunner;
-  taskManager: ItemTaskManager;
-  membership: ItemMembershipTaskManager;
-  S3Options?: GraaspS3FileItemOptions;
-  FSOptions?: GraaspFileItemOptions;
+  itemTaskManager: ItemTaskManager;
   options?: GraaspThumbnailsOptions;
 }): Promise<FastifyInstance> => {
   const app = fastify();
@@ -51,17 +40,10 @@ const build = async ({
   app.decorateRequest('member', GRAASP_ACTOR);
   app.decorate('taskRunner', runner);
   app.decorate('items', {
-    taskManager: taskManager,
+    taskManager: itemTaskManager,
   });
-  app.decorate('itemMemberships', {
-    taskManager: membership,
-  });
-  app.decorate('fileItemPluginOptions', {
-    storageRootPath: FSOptions?.storageRootPath ?? ROOT_PATH,
-  });
-  app.decorate('s3FileItemPluginOptions', S3Options ?? S3_OPTIONS);
 
-  await app.register(plugin, options ?? DISABLE_S3);
+  await app.register(plugin, options);
 
   return app;
 };

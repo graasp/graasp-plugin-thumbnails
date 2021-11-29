@@ -1,4 +1,4 @@
-export { default, GraaspThumbnailsOptions } from './plugin';
-
+export { default } from './plugin';
+export { GraaspThumbnailsOptions } from './types'
 export * from './utils/helpers';
-export { mimetype } from './utils/constants';
+export { THUMBNAIL_MIMETYPE } from './utils/constants';

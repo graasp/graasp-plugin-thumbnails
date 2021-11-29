@@ -13,4 +13,10 @@ export const THUMBNAIL_SIZES = [
 export const THUMBNAIL_FORMAT = 'jpeg';
 export const THUMBNAIL_PREFIX = '/thumbnails';
 
-export const mimetype = 'image/jpeg';
+export const THUMBNAIL_MIMETYPE = 'image/jpeg';
+
+export const ITEM_TYPES = {
+  APP: 'app',
+  S3: 's3File',
+  LOCAL: 'file',
+}

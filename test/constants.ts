@@ -1,6 +1,6 @@
+import { ServiceMethod } from 'graasp-plugin-file'
 import { Actor, Item, Member, Task } from 'graasp';
 export const ROOT_PATH = './test/files';
-export const IMAGE_PATH = './test/files/image.jpeg';
 
 export const GET_ITEM_ID = 'dcd6aa46-a4f0-48b4-a872-f907cf646db0';
 export const ITEM_S3_KEY =
@@ -19,41 +19,46 @@ export const GRAASP_ACTOR: Actor = {
   id: 'actorid',
 };
 
-export const ENABLE_S3 = {
-  enableS3FileItemPlugin: true,
-  pluginStoragePrefix: '',
-  uploadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
 
-  downloadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
-  prefix: '/thumbnails',
-};
-
-export const DISABLE_S3 = {
-  enableS3FileItemPlugin: false,
-  pluginStoragePrefix: '',
-
-  uploadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
-
-  downloadValidation: async (
-    id: string,
-    member: Member,
-  ): Promise<Task<Member, unknown>[]> => [],
-  prefix: '/thumbnails',
-};
-
-export const S3_OPTIONS = {
+export const DEFAULT_S3_OPTIONS = {
   s3Region: 'string',
   s3Bucket: 'string',
   s3AccessKeyId: 'string',
   s3SecretAccessKey: 'string',
   s3UseAccelerateEndpoint: false,
 };
+
+export const buildLocalOptions = ({ pathPrefix = "/prefix/" } = {}) => ({
+  serviceMethod: ServiceMethod.LOCAL,
+  pathPrefix,
+  serviceOptions: {
+    local: {
+      storageRootPath: "storageRootPath",
+    },
+  },
+});
+
+export const buildS3Options = ({ pathPrefix = "/prefix/", downloadPreHookTasks = undefined } = {}, s3 = DEFAULT_S3_OPTIONS) => ({
+  serviceMethod: ServiceMethod.S3,
+  pathPrefix,
+  serviceOptions: {
+    s3,
+  },
+  downloadPreHookTasks
+});
+
+
+export const buildFileServiceOptions = (service) => {
+  if (service === ServiceMethod.LOCAL) {
+    return buildLocalOptions();
+  } else if (service === ServiceMethod.S3) {
+    return buildS3Options();
+  }
+  throw new Error('Service is not defined');
+};
+
+export const FILE_SERVICES = [ServiceMethod.LOCAL, // ServiceMethod.S3
+]
+
+export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg'
+export const FIXTURE_TXT_PATH = './files/1.txt'
