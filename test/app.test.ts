@@ -8,9 +8,13 @@ import {
   Task as MockTask,
 } from 'graasp-test';
 import build from './app';
-import { buildFileServiceOptions, buildLocalOptions, buildS3Options, FILE_SERVICES, FIXTURE_THUMBNAIL_PATH, FIXTURE_TXT_PATH, GET_ITEM_ID, } from './constants';
-import { THUMBNAIL_SIZES } from '../src/utils/constants';
+import { buildFileServiceOptions, buildLocalOptions, buildS3Options, FILE_SERVICES, FIXTURE_THUMBNAIL_PATH, FIXTURE_TXT_PATH, GET_ITEM_ID, GRAASP_ACTOR, ITEM_S3_KEY, } from './constants';
 import { mockCreateUploadFileTask } from './mock';
+import { v4 } from 'uuid'
+import { readFile } from 'fs/promises'
+import { ITEM_TYPES, THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';
+import { FileTaskManager } from 'graasp-plugin-file';
+
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -19,14 +23,13 @@ const buildAppOptions = (options) => ({
   itemTaskManager,
   runner,
   options: {
-    downloadPreHookTasks: async (
+    ...options,
+    downloadPreHookTasks: (async (
     ) => ([
       new MockTask({ filepath: 'filepath' })
-    ]),
-    ...options,
+    ])),
   },
 });
-
 
 describe('Thumbnail Plugin Tests', () => {
 
@@ -43,14 +46,6 @@ describe('Thumbnail Plugin Tests', () => {
         const app1 = await build(buildAppOptions(buildLocalOptions({ pathPrefix: "/hello" })))
         expect(app1).toBeTruthy();
       });
-      it("Invalid rootpath should throw", async () => {
-        expect(
-          async () => await build(buildAppOptions(buildLocalOptions({ pathPrefix: "" })))
-        ).rejects.toThrow(Error);
-        expect(
-          async () => await build(buildAppOptions(buildLocalOptions({ pathPrefix: "hello" })))
-        ).rejects.toThrow(Error);
-      });
     });
 
     describe("S3", () => {
@@ -58,15 +53,6 @@ describe('Thumbnail Plugin Tests', () => {
         const app = await build(buildAppOptions(buildS3Options()));
         expect(app).toBeTruthy();
       });
-      it("Invalid rootpath should throw", async () => {
-        expect(
-          async () => await build(buildAppOptions(buildS3Options({ pathPrefix: "" })))
-        ).rejects.toThrow(Error);
-        expect(
-          async () => await build(buildAppOptions(buildS3Options({ pathPrefix: "/hello" })))
-        ).rejects.toThrow(Error);
-      });
-      // cannot check s3 options validity -> enforced with typescript
     });
   });
 
@@ -91,7 +77,6 @@ describe('Thumbnail Plugin Tests', () => {
           method: 'GET',
           url: `/${GET_ITEM_ID}/download?size=${size}`,
         });
-
         expect(res.statusCode).toBe(StatusCodes.OK);
         // return value is defined in mock runner
         expect(res.body).toBeTruthy();
@@ -99,7 +84,7 @@ describe('Thumbnail Plugin Tests', () => {
     });
   });
 
-  describe.only('POST /upload?id=<id>', () => {
+  describe('POST /upload?id=<id>', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
@@ -158,4 +143,140 @@ describe('Thumbnail Plugin Tests', () => {
       expect(uploadMock).not.toBeCalled()
     });
   });
+});
+
+describe('Test hooks', () => {
+
+  describe('Copy hooks', () => {
+    beforeEach(() => {
+
+      jest.clearAllMocks()
+
+      jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+      jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+    })
+    it.each(FILE_SERVICES)('%s : Copy corresponding file on copy task', (service) => {
+      const copy =
+        jest.spyOn(FileTaskManager.prototype, 'createCopyFileTask').mockImplementation(() => new MockTask(true))
+      jest
+        .spyOn(runner, 'setTaskPostHookHandler')
+        .mockImplementation(async (name, fn) => {
+          if (name === itemTaskManager.getCopyTaskName()) {
+            const item = { id: v4() };
+            const actor = GRAASP_ACTOR;
+            await fn(item, actor, { log: undefined }, { original: item });
+            expect(copy).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length);
+          }
+        });
+
+      build(buildAppOptions(buildFileServiceOptions(service)));
+    });
+
+  });
+
+  describe('Delete hooks', () => {
+    beforeEach(() => {
+
+      jest.clearAllMocks()
+
+      jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+      jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+    })
+    it('Delete corresponding file on delete task', (done) => {
+      const deleteMock =
+        jest.spyOn(FileTaskManager.prototype, 'createDeleteFileTask').mockImplementation(() => new MockTask(true))
+
+      jest
+        .spyOn(runner, 'setTaskPostHookHandler')
+        .mockImplementation(async (name, fn) => {
+          if (name === itemTaskManager.getDeleteTaskName()) {
+            const item = { id: v4() };
+            const actor = GRAASP_ACTOR;
+            await fn(item, actor, { log: undefined }, { original: item });
+            expect(deleteMock).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length);
+            done();
+          }
+        });
+
+      build(buildAppOptions(buildLocalOptions()));
+    });
+  });
+  describe('Create hooks', () => {
+    beforeEach(() => {
+
+      jest.clearAllMocks()
+
+      jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+    })
+    it('Creating image should call post hook', (done) => {
+      jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+      readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)).then(fileBuffer => {
+
+        const createMock =
+          jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
+        jest.spyOn(FileTaskManager.prototype, 'createGetFileBufferTask').mockImplementation(() => new MockTask(fileBuffer))
+
+        jest
+          .spyOn(runner, 'setTaskPostHookHandler')
+          .mockImplementation(async (name, fn) => {
+            if (name === itemTaskManager.getCreateTaskName()) {
+              const item = {
+                id: v4(),
+                type: ITEM_TYPES.LOCAL,
+                extra: { file: { mimetype: THUMBNAIL_MIMETYPE, path: `${ITEM_S3_KEY}/filepath` } },
+              };
+              const actor = GRAASP_ACTOR;
+              await fn(item, actor, { log: undefined });
+              expect(createMock).toHaveBeenCalledTimes(4);
+              done()
+            }
+          });
+
+        build(buildAppOptions(buildLocalOptions()));
+      })
+    });
+    it.each(FILE_SERVICES)('%s : Run post hook only for file items', (service) => {
+      const createMock =
+        jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
+
+      jest
+        .spyOn(runner, 'setTaskPostHookHandler')
+        .mockImplementation(async (name, fn) => {
+          if (name === itemTaskManager.getCreateTaskName()) {
+            const item = {
+              id: v4(),
+              type: ITEM_TYPES.APP,
+              extra: { file: { mimetype: THUMBNAIL_MIMETYPE, path: `${ITEM_S3_KEY}/filepath` } },
+            };
+            const actor = GRAASP_ACTOR;
+            await fn(item, actor, { log: undefined });
+            expect(createMock).toHaveBeenCalledTimes(0);
+          }
+        });
+
+      build(buildAppOptions(buildFileServiceOptions(service)));
+    });
+    it.each(FILE_SERVICES)('%s : Run post hook only for image files', async (service) => {
+      const createMock =
+        jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
+
+      jest
+        .spyOn(runner, 'setTaskPostHookHandler')
+        .mockImplementation(async (name, fn) => {
+          if (name === itemTaskManager.getCreateTaskName()) {
+            const item = {
+              id: v4(),
+              type: ITEM_TYPES.APP,
+              extra: { file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` } },
+            };
+            const actor = GRAASP_ACTOR;
+            await fn(item, actor, { log: undefined });
+            expect(createMock).toHaveBeenCalledTimes(0);
+          }
+        });
+
+      build(buildAppOptions(buildFileServiceOptions(service)));
+    });
+  });
+
 });

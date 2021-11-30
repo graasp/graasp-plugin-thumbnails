@@ -11,7 +11,7 @@ export const THUMBNAIL_SIZES = [
 ];
 
 export const THUMBNAIL_FORMAT = 'jpeg';
-export const THUMBNAIL_PREFIX = '/thumbnails';
+export const THUMBNAIL_PATH_PREFIX = 'thumbnails';
 
 export const THUMBNAIL_MIMETYPE = 'image/jpeg';
 

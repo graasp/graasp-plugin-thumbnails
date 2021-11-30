@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import path from 'path';
-import { THUMBNAIL_PREFIX } from './constants';
+import { THUMBNAIL_PATH_PREFIX } from './constants';
 
 export const hash = (id: string): string =>
   createHash('sha256').update(id).digest('hex');
@@ -20,5 +20,5 @@ export const buildFilePathWithPrefix = (
 ) => {
   const { itemId, filename, pathPrefix } = options
   const filepath = buildFilePathFromId(itemId);
-  return path.join(THUMBNAIL_PREFIX, pathPrefix, filepath, filename);
+  return path.join(THUMBNAIL_PATH_PREFIX, pathPrefix, filepath, filename);
 };

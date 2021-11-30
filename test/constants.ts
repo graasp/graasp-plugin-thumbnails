@@ -1,5 +1,5 @@
 import { ServiceMethod } from 'graasp-plugin-file'
-import { Actor, Item, Member, Task } from 'graasp';
+import { Actor, Item, } from 'graasp';
 export const ROOT_PATH = './test/files';
 
 export const GET_ITEM_ID = 'dcd6aa46-a4f0-48b4-a872-f907cf646db0';
@@ -19,7 +19,6 @@ export const GRAASP_ACTOR: Actor = {
   id: 'actorid',
 };
 
-
 export const DEFAULT_S3_OPTIONS = {
   s3Region: 'string',
   s3Bucket: 'string',
@@ -28,7 +27,7 @@ export const DEFAULT_S3_OPTIONS = {
   s3UseAccelerateEndpoint: false,
 };
 
-export const buildLocalOptions = ({ pathPrefix = "/prefix/" } = {}) => ({
+export const buildLocalOptions = ({ pathPrefix = "/prefix/", } = {}) => ({
   serviceMethod: ServiceMethod.LOCAL,
   pathPrefix,
   serviceOptions: {
@@ -36,17 +35,14 @@ export const buildLocalOptions = ({ pathPrefix = "/prefix/" } = {}) => ({
       storageRootPath: "/storageRootPath",
     },
   },
-  buildFilePath: (itemId, filename) => `filepath/${itemId}/${filename}`,
 });
 
-export const buildS3Options = ({ pathPrefix = "/prefix/", downloadPreHookTasks = undefined, buildFilePath = undefined } = {}, s3 = DEFAULT_S3_OPTIONS) => ({
+export const buildS3Options = ({ pathPrefix = "/prefix/" } = {}) => ({
   serviceMethod: ServiceMethod.S3,
   pathPrefix,
   serviceOptions: {
-    s3,
-  },
-  downloadPreHookTasks,
-  buildFilePath: buildFilePath ?? ((itemId, filename) => `filepath/${itemId}/${filename}`),
+    s3: DEFAULT_S3_OPTIONS,
+  }
 });
 
 
@@ -59,7 +55,9 @@ export const buildFileServiceOptions = (service) => {
   throw new Error('Service is not defined');
 };
 
-export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3
+export const FILE_SERVICES = [
+  // ServiceMethod.LOCAL,
+  ServiceMethod.S3
 ]
 
 export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg'

@@ -12,11 +12,12 @@ import {
 import {
   THUMBNAIL_SIZES,
   THUMBNAIL_FORMAT,
-  THUMBNAIL_PREFIX,
+  THUMBNAIL_PATH_PREFIX,
   ITEM_TYPES, THUMBNAIL_MIMETYPE
 } from './utils/constants';
-import { buildFilePathFromId, buildFilePathWithPrefix } from './utils/helpers';
+import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
+import path from 'path/posix';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -43,6 +44,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     taskRunner: runner,
     log: defaultLogger,
   } = fastify;
+
+  if (!options.downloadPreHookTasks) {
+    throw new Error(
+      "graasp-plugin-thumbnails: downloadPreHookTasks missing"
+    );
+  }
 
   if (serviceMethod === ServiceMethod.S3) {
     if (
@@ -110,7 +117,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         ),
       );
     },
-
     downloadPreHookTasks: options.downloadPreHookTasks,
   });
 
@@ -183,17 +189,18 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
           const thumbnails = await createThumbnails(item, actor);
 
-
           // create thumbnails for new image
           const tasks = await Promise.all(
-            thumbnails.map(async ({ size: filename, image }) =>
-              fileTaskManager.createUploadFileTask(actor, {
+            thumbnails.map(async ({ size: filename, image }) => {
+              return fileTaskManager.createUploadFileTask(actor, {
                 file: await image.toBuffer(),
                 filepath: buildFilePath(id, filename),
                 mimetype: THUMBNAIL_FORMAT,
-              }),
+              })
+            },
             ),
           );
+
           await runner.runMultiple(tasks, log);
         }
       },
@@ -205,7 +212,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const { appsTemplateRoot } = enableAppsHooks;
 
     const buildAppsTemplatesRoot = (appId: string, name: string) =>
-      `${THUMBNAIL_PREFIX}/${appsTemplateRoot}/${appId}/${name}`;
+      path.join(THUMBNAIL_PATH_PREFIX, appsTemplateRoot, appId, name);
 
     const createTaskName = itemTaskManager.getCreateTaskName();
     runner.setTaskPostHookHandler<Item>(

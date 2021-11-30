@@ -7,7 +7,7 @@ import {
 import path from 'path'
 import { readFile } from 'fs/promises'
 import build from './app';
-import { buildLocalOptions, FIXTURE_THUMBNAIL_PATH, GRAASP_ACTOR, ITEM_S3_KEY } from './constants';
+import { buildFileServiceOptions, buildLocalOptions, FILE_SERVICES, FIXTURE_THUMBNAIL_PATH, GRAASP_ACTOR, ITEM_S3_KEY } from './constants';
 import { ITEM_TYPES, THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';
 import { FileTaskManager } from 'graasp-plugin-file';
 
@@ -29,15 +29,15 @@ const buildAppOptions = (options) => ({
 
 describe('Test hooks', () => {
     beforeEach(() => {
-
         jest.clearAllMocks()
-
-        jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
-        jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
     })
 
     describe('Copy hooks', () => {
-        it('Copy corresponding file on copy task', () => {
+        beforeEach(() => {
+            jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+            jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+        })
+        it.each(FILE_SERVICES)('%s : Copy corresponding file on copy task', (service) => {
             const copy =
                 jest.spyOn(FileTaskManager.prototype, 'createCopyFileTask').mockImplementation(() => new MockTask(true))
             jest
@@ -51,12 +51,16 @@ describe('Test hooks', () => {
                     }
                 });
 
-            build(buildAppOptions(buildLocalOptions()));
+            build(buildAppOptions(buildFileServiceOptions(service)));
         });
 
     });
 
     describe('Delete hooks', () => {
+        beforeEach(() => {
+            jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+            jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+        })
         it('Delete corresponding file on delete task', (done) => {
             const deleteMock =
                 jest.spyOn(FileTaskManager.prototype, 'createDeleteFileTask').mockImplementation(() => new MockTask(true))
@@ -77,32 +81,37 @@ describe('Test hooks', () => {
         });
     });
     describe('Create hooks', () => {
-        it('Creating image should call post hook', async () => {
-            const fileBuffer = await readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH))
+        beforeEach(() => {
+            jest.spyOn(runner, 'runSingle').mockImplementation(async (task) => task.getResult())
+        })
+        it('Creating image should call post hook', (done) => {
+            jest.spyOn(runner, 'runMultiple').mockImplementation(async () => [])
+            readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)).then(fileBuffer => {
 
-            const createMock =
-                jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
-            jest.spyOn(FileTaskManager.prototype, 'createGetFileBufferTask').mockImplementation(() => new MockTask(fileBuffer))
+                const createMock =
+                    jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
+                jest.spyOn(FileTaskManager.prototype, 'createGetFileBufferTask').mockImplementation(() => new MockTask(fileBuffer))
 
-            jest
-                .spyOn(runner, 'setTaskPostHookHandler')
-                .mockImplementation(async (name, fn) => {
-                    if (name === itemTaskManager.getCreateTaskName()) {
-                        const item = {
-                            id: v4(),
-                            type: ITEM_TYPES.LOCAL,
-                            extra: { file: { mimetype: THUMBNAIL_MIMETYPE, path: `${ITEM_S3_KEY}/filepath` } },
-                        };
-                        const actor = GRAASP_ACTOR;
-                        await fn(item, actor, { log: undefined });
-                        expect(createMock).toHaveBeenCalledTimes(4);
-                    }
-                });
+                jest
+                    .spyOn(runner, 'setTaskPostHookHandler')
+                    .mockImplementation(async (name, fn) => {
+                        if (name === itemTaskManager.getCreateTaskName()) {
+                            const item = {
+                                id: v4(),
+                                type: ITEM_TYPES.LOCAL,
+                                extra: { file: { mimetype: THUMBNAIL_MIMETYPE, path: `${ITEM_S3_KEY}/filepath` } },
+                            };
+                            const actor = GRAASP_ACTOR;
+                            await fn(item, actor, { log: undefined });
+                            expect(createMock).toHaveBeenCalledTimes(4);
+                            done()
+                        }
+                    });
 
-            build(buildAppOptions(buildLocalOptions()));
+                build(buildAppOptions(buildLocalOptions()));
+            })
         });
-        it.only('Run post hook only for file items', async () => {
-
+        it.each(FILE_SERVICES)('%s : Run post hook only for file items', (service) => {
             const createMock =
                 jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
 
@@ -121,11 +130,9 @@ describe('Test hooks', () => {
                     }
                 });
 
-            build(buildAppOptions(buildLocalOptions()));
+            build(buildAppOptions(buildFileServiceOptions(service)));
         });
-        it.only('Run post hook only for image files', async () => {
-            const fileBuffer = await readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH))
-
+        it.each(FILE_SERVICES)('%s : Run post hook only for image files', async (service) => {
             const createMock =
                 jest.spyOn(FileTaskManager.prototype, 'createUploadFileTask').mockImplementation(() => new MockTask(true))
 
@@ -144,55 +151,8 @@ describe('Test hooks', () => {
                     }
                 });
 
-            build(buildAppOptions(buildLocalOptions()));
+            build(buildAppOptions(buildFileServiceOptions(service)));
         });
     });
 
-    //   describe('Test S3 hooks', () => {
-    //     it('Copy corresponding file on copy task', (done) => {
-    //       const copy = jest.spyOn(S3Provider.prototype, 'copyObject');
-
-    //       jest
-    //         .spyOn(runner, 'setTaskPostHookHandler')
-    //         .mockImplementation(async (name, fn) => {
-    //           if (name === taskManager.getCopyTaskName()) {
-    //             const item = { id: v4() };
-    //             const actor = GRAASP_ACTOR;
-    //             await fn(item, actor, { log: undefined }, { original: item });
-    //             expect(copy).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length);
-    //             done();
-    //           }
-    //         });
-
-    //       build({
-    //         taskManager,
-    //         runner,
-    //         membership,
-    //         options: { ...ENABLE_S3, enableItemsHooks: true },
-    //       });
-    //     });
-
-    //     it('Delete corresponding file on delete task', (done) => {
-    //       const deletefunc = jest.spyOn(S3Provider.prototype, 'deleteItem');
-
-    //       jest
-    //         .spyOn(runner, 'setTaskPostHookHandler')
-    //         .mockImplementation(async (name, fn) => {
-    //           if (name === taskManager.getDeleteTaskName()) {
-    //             const item = { id: v4() };
-    //             const actor = GRAASP_ACTOR;
-    //             await fn(item, actor, { log: undefined }, { original: item });
-    //             expect(deletefunc).toHaveBeenCalled();
-    //             done();
-    //           }
-    //         });
-
-    //       build({
-    //         taskManager,
-    //         runner,
-    //         membership,
-    //         options: { ...ENABLE_S3, enableItemsHooks: true },
-    //       });
-    //     });
-    //   });
 });

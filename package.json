@@ -9,7 +9,7 @@
     "prepack": "yarn build",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "jest test/app.test.ts --forceExit --coverage --verbose",
+    "test": "jest test --forceExit --coverage --verbose",
     "test:watch": "yarn test --watchAll"
   },
   "repository": {
