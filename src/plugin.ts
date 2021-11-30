@@ -5,7 +5,8 @@ import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item'
 import {
   S3FileItemExtra,
-  FileItemExtra,
+  LocalFileItemExtra,
+  FileItemExtra
 } from 'graasp-plugin-file';
 
 import {
@@ -14,7 +15,7 @@ import {
   THUMBNAIL_PREFIX,
   ITEM_TYPES, THUMBNAIL_MIMETYPE
 } from './utils/constants';
-import { buildFilePathFromId } from './utils/helpers';
+import { buildFilePathFromId, buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 
 declare module 'fastify' {
@@ -43,19 +44,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     log: defaultLogger,
   } = fastify;
 
-  if (serviceMethod === ServiceMethod.LOCAL && (!pathPrefix || !pathPrefix.startsWith('/'))) {
-    throw new Error(
-      'graasp-plugin-thumbnails: local storage service root path is malformed',
-    );
-  }
-
   if (serviceMethod === ServiceMethod.S3) {
-    if (!pathPrefix) {
-      throw new Error(
-        "graasp-plugin-thumbnails: s3 storage service root path is malformed"
-      );
-    }
-
     if (
       !serviceOptions?.s3?.s3Region ||
       !serviceOptions?.s3?.s3Bucket ||
@@ -70,14 +59,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
   const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
-  const buildFilePath = (itemId: string, filename: string) => {
-    const filepath = buildFilePathFromId(itemId);
-    return `${THUMBNAIL_PREFIX}${pathPrefix}${filepath}/${filename}`;
-  };
+  const buildFilePath = (itemId: string, filename: string) => buildFilePathWithPrefix({ itemId, pathPrefix, filename })
+
 
   const createThumbnails = async (item: Item<UnknownExtra>, actor: Actor) => {
     // get original image
-    const filename = getFilePathFromItemExtra(serviceMethod, item.extra); //  TODO: get filename from item extra
+    const filename = getFilePathFromItemExtra(serviceMethod, item.extra as FileItemExtra); //  TODO: get filename from item extra
     const task = fileTaskManager.createGetFileBufferTask(actor, { filename });
     const originalImage = await runner.runSingle(task);
 
@@ -117,7 +104,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         thumbnails.map(async ({ size: filename, image }) =>
           fileTaskManager.createUploadFileTask(member, {
             file: await image.toBuffer(),
-            filename: buildFilePath(itemId, filename),
+            filepath: buildFilePath(itemId, filename),
             mimetype: THUMBNAIL_MIMETYPE,
           }),
         ),
@@ -191,7 +178,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           (type === ITEM_TYPES.S3 &&
             (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
           (type === ITEM_TYPES.LOCAL &&
-            (extra as FileItemExtra)?.file?.mimetype.startsWith('image'))
+            (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
 
           const thumbnails = await createThumbnails(item, actor);
@@ -202,7 +189,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             thumbnails.map(async ({ size: filename, image }) =>
               fileTaskManager.createUploadFileTask(actor, {
                 file: await image.toBuffer(),
-                filename: buildFilePath(id, filename),
+                filepath: buildFilePath(id, filename),
                 mimetype: THUMBNAIL_FORMAT,
               }),
             ),

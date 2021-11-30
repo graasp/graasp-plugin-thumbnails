@@ -57,12 +57,13 @@ describe('Thumbnail Plugin Tests', () => {
       it("Valid options should resolve", async () => {
         const app = await build(buildAppOptions(buildS3Options()));
         expect(app).toBeTruthy();
-        const app1 = await build(buildAppOptions(buildS3Options({ pathPrefix: "/hello" })))
-        expect(app1).toBeTruthy();
       });
       it("Invalid rootpath should throw", async () => {
         expect(
           async () => await build(buildAppOptions(buildS3Options({ pathPrefix: "" })))
+        ).rejects.toThrow(Error);
+        expect(
+          async () => await build(buildAppOptions(buildS3Options({ pathPrefix: "/hello" })))
         ).rejects.toThrow(Error);
       });
       // cannot check s3 options validity -> enforced with typescript
@@ -82,7 +83,7 @@ describe('Thumbnail Plugin Tests', () => {
         });
     });
 
-    it.each(FILE_SERVICES)('Successfully download all different sizes', async (service) => {
+    it.each(FILE_SERVICES)('%s :Successfully download all different sizes', async (service) => {
       const app = await build(buildAppOptions(buildFileServiceOptions(service)));
 
       for (const { name: size } of Object.values(THUMBNAIL_SIZES)) {
@@ -98,14 +99,14 @@ describe('Thumbnail Plugin Tests', () => {
     });
   });
 
-  describe('POST /upload?id=<id>', () => {
+  describe.only('POST /upload?id=<id>', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
       jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
     });
 
-    it.each(FILE_SERVICES)('Successfully upload thumbnail', async (service) => {
+    it.each(FILE_SERVICES)('%s :Successfully upload thumbnail', async (service) => {
       const uploadMock = mockCreateUploadFileTask(true)
 
       jest
@@ -132,7 +133,7 @@ describe('Thumbnail Plugin Tests', () => {
     });
 
 
-    it.each(FILE_SERVICES)('Throw if try to upload a non-image file', async (service) => {
+    it.each(FILE_SERVICES)('%s : Throw if try to upload a non-image file', async (service) => {
       const uploadMock = mockCreateUploadFileTask(true)
 
       jest

@@ -4,7 +4,7 @@ import {
     DownloadPreHookTasksFunction,
     ServiceMethod,
     UploadPreHookTasksFunction,
-    GraaspFileItemOptions,
+    GraaspLocalFileItemOptions,
     GraaspS3FileItemOptions,
 } from 'graasp-plugin-file';
 
@@ -24,7 +24,7 @@ export interface GraaspThumbnailsOptions {
 
     serviceOptions: {
         s3: GraaspS3FileItemOptions;
-        local: GraaspFileItemOptions;
+        local: GraaspLocalFileItemOptions;
     };
 }
 

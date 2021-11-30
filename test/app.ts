@@ -43,6 +43,7 @@ const build = async ({
     taskManager: itemTaskManager,
   });
 
+  console.log('options: ', options);
   await app.register(plugin, options);
 
   return app;

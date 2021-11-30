@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import path from 'path';
 import { THUMBNAIL_PREFIX } from './constants';
 
 export const hash = (id: string): string =>
@@ -9,11 +10,15 @@ export const buildFilePathFromId = (id: string) =>
     .match(/.{1,8}/g)
     .join('/');
 
-export const buildFilePath = (
-  itemId: string,
-  pathPrefix: string,
-  filename: string,
+// used for download in public plugin
+export const buildFilePathWithPrefix = (
+  options: {
+    itemId: string,
+    pathPrefix: string,
+    filename: string,
+  }
 ) => {
+  const { itemId, filename, pathPrefix } = options
   const filepath = buildFilePathFromId(itemId);
-  return `${THUMBNAIL_PREFIX}${pathPrefix}${filepath}/${filename}`;
+  return path.join(THUMBNAIL_PREFIX, pathPrefix, filepath, filename);
 };

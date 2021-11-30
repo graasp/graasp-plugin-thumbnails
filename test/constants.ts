@@ -33,18 +33,20 @@ export const buildLocalOptions = ({ pathPrefix = "/prefix/" } = {}) => ({
   pathPrefix,
   serviceOptions: {
     local: {
-      storageRootPath: "storageRootPath",
+      storageRootPath: "/storageRootPath",
     },
   },
+  buildFilePath: (itemId, filename) => `filepath/${itemId}/${filename}`,
 });
 
-export const buildS3Options = ({ pathPrefix = "/prefix/", downloadPreHookTasks = undefined } = {}, s3 = DEFAULT_S3_OPTIONS) => ({
+export const buildS3Options = ({ pathPrefix = "/prefix/", downloadPreHookTasks = undefined, buildFilePath = undefined } = {}, s3 = DEFAULT_S3_OPTIONS) => ({
   serviceMethod: ServiceMethod.S3,
   pathPrefix,
   serviceOptions: {
     s3,
   },
-  downloadPreHookTasks
+  downloadPreHookTasks,
+  buildFilePath: buildFilePath ?? ((itemId, filename) => `filepath/${itemId}/${filename}`),
 });
 
 
@@ -57,7 +59,7 @@ export const buildFileServiceOptions = (service) => {
   throw new Error('Service is not defined');
 };
 
-export const FILE_SERVICES = [ServiceMethod.LOCAL, // ServiceMethod.S3
+export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3
 ]
 
 export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg'
