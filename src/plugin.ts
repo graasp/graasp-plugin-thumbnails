@@ -22,7 +22,7 @@ import path from 'path/posix';
 declare module 'fastify' {
   interface FastifyInstance {
     appService?: {
-      getAppIdFromUrl?: Function;
+      getAppIdForUrl?: Function;
     };
   }
 }
@@ -43,6 +43,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     appService,
     taskRunner: runner,
     log: defaultLogger,
+    db
   } = fastify;
 
   if (!options.downloadPreHookTasks) {
@@ -209,7 +210,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
   if (enableAppsHooks) {
 
-    const { appsTemplateRoot } = enableAppsHooks;
+    const { appsTemplateRoot, itemsRoot } = enableAppsHooks;
 
     const buildAppsTemplatesRoot = (appId: string, name: string) =>
       path.join(THUMBNAIL_PATH_PREFIX, appsTemplateRoot, appId, name);
@@ -222,16 +223,17 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
         // generate automatically thumbnails for apps
         if (type === ITEM_TYPES.APP) {
-          const appId = appService.getAppIdFromUrl(
+          const appId = (await appService.getAppIdForUrl(
             (extra as AppItemExtra).app.url,
-          );
+            db.pool
+          )).id;
 
           // copy thumbnails of app template for copied item
           const tasks = THUMBNAIL_SIZES.map(({ name }) =>
             fileTaskManager.createCopyFileTask(actor, {
               newId: id,
               originalPath: buildAppsTemplatesRoot(appId, name),
-              newFilePath: buildFilePath(id, name),
+              newFilePath: buildFilePathWithPrefix({ itemId: id, pathPrefix: itemsRoot, filename: name }),
               mimetype: THUMBNAIL_MIMETYPE,
             }),
           );

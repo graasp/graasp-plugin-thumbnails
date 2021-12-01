@@ -20,6 +20,7 @@ export interface GraaspThumbnailsOptions {
     enableItemsHooks?: boolean;
     enableAppsHooks?: {
         appsTemplateRoot: string; // apps/template
+        itemsRoot: string; // items/
     };
 
     serviceOptions: {
