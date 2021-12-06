@@ -10,10 +10,7 @@ import {
 import build from './app';
 import { buildFileServiceOptions, buildLocalOptions, buildS3Options, FILE_SERVICES, FIXTURE_THUMBNAIL_PATH, FIXTURE_TXT_PATH, GET_ITEM_ID, GRAASP_ACTOR, ITEM_S3_KEY, } from './constants';
 import { mockCreateUploadFileTask } from './mock';
-import { v4 } from 'uuid'
-import { readFile } from 'fs/promises'
-import { ITEM_TYPES, THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';
-import { FileTaskManager } from 'graasp-plugin-file';
+import {THUMBNAIL_SIZES } from '../src/utils/constants';
 
 
 const itemTaskManager = new ItemTaskManager();
@@ -132,14 +129,14 @@ describe('Thumbnail Plugin Tests', () => {
       const form = new FormData();
       form.append('file', createReadStream(path.resolve(__dirname, FIXTURE_TXT_PATH)));
 
-      expect(
-        async () => await app.inject({
+      const res = await app.inject({
           method: 'POST',
           url: `/upload`,
           payload: form,
           headers: form.getHeaders(),
-        })
-      ).rejects.toThrow(Error);
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
       expect(uploadMock).not.toBeCalled()
     });
   });

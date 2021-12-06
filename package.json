@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file#1/init",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item#18/newFilePlugin",
     "sharp": "0.29.1"
   },
