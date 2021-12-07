@@ -130,7 +130,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       async ({ id }, actor, { log = defaultLogger }) => {
         //  check item has thumbnails
         try{
-          await access(buildFilePath(id, undefined))
+          // await access(buildFilePath(id, undefined))
           // delete thumbnails for item
           const tasks = THUMBNAIL_SIZES.map(({ name }) => {
             const filepath = buildFilePath(id, name);
@@ -155,7 +155,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
         // TODO: check item has thumbnails
         try{
-          await access(buildFilePath(id, undefined));
+          // await access(buildFilePath(id, undefined));
           // copy thumbnails for copied item
           const tasks = THUMBNAIL_SIZES.map(({ name: filename }) => {
             const originalPath = buildFilePath(original.id, filename);
@@ -191,21 +191,26 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
 
-          const thumbnails = await createThumbnails(item, actor);
+          try{
+            const thumbnails = await createThumbnails(item, actor);
 
-          // create thumbnails for new image
-          const tasks = await Promise.all(
-            thumbnails.map(async ({ size: filename, image }) => {
-              return fileTaskManager.createUploadFileTask(actor, {
-                file: await image.toBuffer(),
-                filepath: buildFilePath(id, filename),
-                mimetype: THUMBNAIL_FORMAT,
-              })
-            },
-            ),
-          );
+            // create thumbnails for new image
+            const tasks = await Promise.all(
+              thumbnails.map(async ({ size: filename, image }) => {
+                return fileTaskManager.createUploadFileTask(actor, {
+                  file: await image.toBuffer(),
+                  filepath: buildFilePath(id, filename),
+                  mimetype: THUMBNAIL_FORMAT,
+                })
+              },
+              ),
+            );
 
-          await runner.runMultiple(tasks, log);
+            await runner.runMultiple(tasks, log);
+          }
+          catch(err){
+            log.error(err);
+          }
         }
       },
     );
