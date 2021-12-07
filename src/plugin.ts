@@ -18,6 +18,7 @@ import {
 import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 import path from 'path/posix';
+import { access } from 'fs/promises';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -122,19 +123,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   });
 
   if (enableItemsHooks) {
-    // TODO
-    const itemHasThumbnails = async (id: string) => {
-      // check item has thumbnails
-      const hasThumbnails = true;
-      return hasThumbnails;
-    };
 
     const deleteFileTaskName = itemTaskManager.getDeleteTaskName();
     runner.setTaskPostHookHandler<Item>(
       deleteFileTaskName,
       async ({ id }, actor, { log = defaultLogger }) => {
         //  check item has thumbnails
-        if (await itemHasThumbnails(id)) {
+        try{
+          await access(buildFilePath(id, undefined))
           // delete thumbnails for item
           const tasks = THUMBNAIL_SIZES.map(({ name }) => {
             const filepath = buildFilePath(id, name);
@@ -144,6 +140,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           })
           // no need to wait for thumbnails to be deleted
           runner.runMultiple(tasks, log);
+        }
+        catch(err){
+          log.error(err);
         }
       },
     );
@@ -155,7 +154,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         const { id } = item; // full copy with new `id`
 
         // TODO: check item has thumbnails
-        if (await itemHasThumbnails(id)) {
+        try{
+          await access(buildFilePath(id, undefined));
           // copy thumbnails for copied item
           const tasks = THUMBNAIL_SIZES.map(({ name: filename }) => {
             const originalPath = buildFilePath(original.id, filename);
@@ -170,6 +170,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           })
           // no need to wait
           runner.runMultiple(tasks, log);
+        }
+        catch(err){
+          log.error(err);
         }
       },
     );
