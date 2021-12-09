@@ -1,10 +1,7 @@
 import fastify, { FastifyInstance } from 'fastify';
-import {
-  ItemTaskManager,
-  TaskRunner,
-} from 'graasp-test';
+import { ItemTaskManager, TaskRunner } from 'graasp-test';
 import plugin, { GraaspThumbnailsOptions } from '../src/index';
-import { GRAASP_ACTOR, } from './constants';
+import { GRAASP_ACTOR } from './constants';
 
 const schemas = {
   $id: 'http://graasp.org/',

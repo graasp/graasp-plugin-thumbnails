@@ -11,14 +11,12 @@ export const buildFilePathFromId = (id: string) =>
     .join('/');
 
 // used for download in public plugin
-export const buildFilePathWithPrefix = (
-  options: {
-    itemId: string,
-    pathPrefix: string,
-    filename: string,
-  }
-) => {
-  const { itemId, filename, pathPrefix } = options
+export const buildFilePathWithPrefix = (options: {
+  itemId: string;
+  pathPrefix: string;
+  filename: string;
+}) => {
+  const { itemId, filename, pathPrefix } = options;
   const filepath = buildFilePathFromId(itemId);
   return path.join(THUMBNAIL_PATH_PREFIX, pathPrefix, filepath, filename);
 };

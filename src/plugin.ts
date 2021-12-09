@@ -2,28 +2,28 @@ import { FastifyPluginAsync } from 'fastify';
 import { Actor, Item, UnknownExtra } from 'graasp';
 import sharp from 'sharp';
 import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
-import { getFilePathFromItemExtra } from 'graasp-plugin-file-item'
+import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
 import {
   S3FileItemExtra,
   LocalFileItemExtra,
-  FileItemExtra
+  FileItemExtra,
 } from 'graasp-plugin-file';
 
 import {
   THUMBNAIL_SIZES,
   THUMBNAIL_FORMAT,
   THUMBNAIL_PATH_PREFIX,
-  ITEM_TYPES, THUMBNAIL_MIMETYPE
+  ITEM_TYPES,
+  THUMBNAIL_MIMETYPE,
 } from './utils/constants';
 import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 import path from 'path/posix';
-import { access } from 'fs/promises';
 
 declare module 'fastify' {
   interface FastifyInstance {
     appService?: {
-      getAppIdForUrl?: Function;
+      getAppIdByUrl?: Function;
     };
   }
 }
@@ -44,13 +44,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     appService,
     taskRunner: runner,
     log: defaultLogger,
-    db
+    db,
   } = fastify;
 
   if (!options.downloadPreHookTasks) {
-    throw new Error(
-      "graasp-plugin-thumbnails: downloadPreHookTasks missing"
-    );
+    throw new Error('graasp-plugin-thumbnails: downloadPreHookTasks missing');
   }
 
   if (serviceMethod === ServiceMethod.S3) {
@@ -61,19 +59,22 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       !serviceOptions?.s3?.s3SecretAccessKey
     ) {
       throw new Error(
-        "graasp-plugin-thumbnails: mandatory options for s3 service missing"
+        'graasp-plugin-thumbnails: mandatory options for s3 service missing',
       );
     }
   }
 
   const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
-  const buildFilePath = (itemId: string, filename: string) => buildFilePathWithPrefix({ itemId, pathPrefix, filename })
-
+  const buildFilePath = (itemId: string, filename: string) =>
+    buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
   const createThumbnails = async (item: Item<UnknownExtra>, actor: Actor) => {
     // get original image
-    const filename = getFilePathFromItemExtra(serviceMethod, item.extra as FileItemExtra); //  TODO: get filename from item extra
+    const filename = getFilePathFromItemExtra(
+      serviceMethod,
+      item.extra as FileItemExtra,
+    );
     const task = fileTaskManager.createGetFileBufferTask(actor, { filename });
     const originalImage = await runner.runSingle(task);
 
@@ -95,10 +96,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     uploadPreHookTasks: (data, auth) => {
       // check file is an image
       if (!data.mimetype.includes('image')) {
-        throw new Error("File is not an image")
+        throw new Error('File is not an image');
       }
 
-      return options?.uploadPreHookTasks?.(data, auth)
+      return options?.uploadPreHookTasks?.(data, auth);
     },
 
     uploadPostHookTasks: async ({ file, itemId }, { member }) => {
@@ -107,7 +108,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         image: sharp(file).resize({ width }).toFormat(THUMBNAIL_FORMAT),
       }));
 
-      // todo: do not upload original thumbnail ? 
       // it might not be saved correctly in the original upload
       return await Promise.all(
         thumbnails.map(async ({ size: filename, image }) =>
@@ -123,13 +123,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   });
 
   if (enableItemsHooks) {
-
     const deleteFileTaskName = itemTaskManager.getDeleteTaskName();
     runner.setTaskPostHookHandler<Item>(
       deleteFileTaskName,
       async ({ id }, actor, { log = defaultLogger }) => {
         //  check item has thumbnails
-        try{
+        try {
           // await access(buildFilePath(id, undefined))
           // delete thumbnails for item
           const tasks = THUMBNAIL_SIZES.map(({ name }) => {
@@ -137,11 +136,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             return fileTaskManager.createDeleteFileTask(actor, {
               filepath,
             });
-          })
+          });
           // no need to wait for thumbnails to be deleted
           runner.runMultiple(tasks, log);
-        }
-        catch(err){
+        } catch (err) {
           log.error(err);
         }
       },
@@ -152,10 +150,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       copyItemTaskName,
       async (item, actor, { log = defaultLogger }, { original }) => {
         const { id } = item; // full copy with new `id`
-
-        // TODO: check item has thumbnails
-        try{
-          // await access(buildFilePath(id, undefined));
+        try {
           // copy thumbnails for copied item
           const tasks = THUMBNAIL_SIZES.map(({ name: filename }) => {
             const originalPath = buildFilePath(original.id, filename);
@@ -167,11 +162,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               newFilePath,
               mimetype: THUMBNAIL_MIMETYPE,
             });
-          })
+          });
           // no need to wait
           runner.runMultiple(tasks, log);
-        }
-        catch(err){
+        } catch (err) {
           log.error(err);
         }
       },
@@ -190,8 +184,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           (type === ITEM_TYPES.LOCAL &&
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
-
-          try{
+          try {
             const thumbnails = await createThumbnails(item, actor);
 
             // create thumbnails for new image
@@ -201,14 +194,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
                   file: await image.toBuffer(),
                   filepath: buildFilePath(id, filename),
                   mimetype: THUMBNAIL_FORMAT,
-                })
-              },
-              ),
+                });
+              }),
             );
 
             await runner.runMultiple(tasks, log);
-          }
-          catch(err){
+          } catch (err) {
             log.error(err);
           }
         }
@@ -217,7 +208,6 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   }
 
   if (enableAppsHooks) {
-
     const { appsTemplateRoot, itemsRoot } = enableAppsHooks;
 
     const buildAppsTemplatesRoot = (appId: string, name: string) =>
@@ -231,17 +221,23 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
         // generate automatically thumbnails for apps
         if (type === ITEM_TYPES.APP) {
-          const appId = (await appService.getAppIdForUrl(
-            (extra as AppItemExtra).app.url,
-            db.pool
-          )).id;
+          const appId = (
+            await appService.getAppIdByUrl(
+              (extra as AppItemExtra).app.url,
+              db.pool,
+            )
+          ).id;
 
           // copy thumbnails of app template for copied item
           const tasks = THUMBNAIL_SIZES.map(({ name }) =>
             fileTaskManager.createCopyFileTask(actor, {
               newId: id,
               originalPath: buildAppsTemplatesRoot(appId, name),
-              newFilePath: buildFilePathWithPrefix({ itemId: id, pathPrefix: itemsRoot, filename: name }),
+              newFilePath: buildFilePathWithPrefix({
+                itemId: id,
+                pathPrefix: itemsRoot,
+                filename: name,
+              }),
               mimetype: THUMBNAIL_MIMETYPE,
             }),
           );

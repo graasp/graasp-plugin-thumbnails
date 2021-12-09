@@ -1,17 +1,22 @@
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import path from 'path'
-import {
-  TaskRunner,
-  ItemTaskManager,
-  Task as MockTask,
-} from 'graasp-test';
+import path from 'path';
+import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
 import build from './app';
-import { buildFileServiceOptions, buildLocalOptions, buildS3Options, FILE_SERVICES, FIXTURE_THUMBNAIL_PATH, FIXTURE_TXT_PATH, GET_ITEM_ID, GRAASP_ACTOR, ITEM_S3_KEY, } from './constants';
+import {
+  buildFileServiceOptions,
+  buildLocalOptions,
+  buildS3Options,
+  FILE_SERVICES,
+  FIXTURE_THUMBNAIL_PATH,
+  FIXTURE_TXT_PATH,
+  GET_ITEM_ID,
+  GRAASP_ACTOR,
+  ITEM_S3_KEY,
+} from './constants';
 import { mockCreateUploadFileTask } from './mock';
-import {THUMBNAIL_SIZES } from '../src/utils/constants';
-
+import { THUMBNAIL_SIZES } from '../src/utils/constants';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -21,32 +26,30 @@ const buildAppOptions = (options) => ({
   runner,
   options: {
     ...options,
-    downloadPreHookTasks: (async (
-    ) => ([
-      new MockTask({ filepath: 'filepath' })
-    ])),
+    downloadPreHookTasks: async () => [new MockTask({ filepath: 'filepath' })],
   },
 });
 
 describe('Thumbnail Plugin Tests', () => {
-
-  describe("Options", () => {
+  describe('Options', () => {
     beforeEach(() => {
-      jest.spyOn(runner, "setTaskPostHookHandler").mockImplementation(() => { });
-      jest.spyOn(runner, "setTaskPreHookHandler").mockImplementation(() => { });
+      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => {});
+      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => {});
     });
 
-    describe("Local", () => {
-      it("Valid options should resolve", async () => {
+    describe('Local', () => {
+      it('Valid options should resolve', async () => {
         const app = await build(buildAppOptions(buildLocalOptions()));
         expect(app).toBeTruthy();
-        const app1 = await build(buildAppOptions(buildLocalOptions({ pathPrefix: "/hello" })))
+        const app1 = await build(
+          buildAppOptions(buildLocalOptions({ pathPrefix: '/hello' })),
+        );
         expect(app1).toBeTruthy();
       });
     });
 
-    describe("S3", () => {
-      it("Valid options should resolve", async () => {
+    describe('S3', () => {
+      it('Valid options should resolve', async () => {
         const app = await build(buildAppOptions(buildS3Options()));
         expect(app).toBeTruthy();
       });
@@ -66,19 +69,24 @@ describe('Thumbnail Plugin Tests', () => {
         });
     });
 
-    it.each(FILE_SERVICES)('%s :Successfully download all different sizes', async (service) => {
-      const app = await build(buildAppOptions(buildFileServiceOptions(service)));
+    it.each(FILE_SERVICES)(
+      '%s :Successfully download all different sizes',
+      async (service) => {
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service)),
+        );
 
-      for (const { name: size } of Object.values(THUMBNAIL_SIZES)) {
-        const res = await app.inject({
-          method: 'GET',
-          url: `/${GET_ITEM_ID}/download?size=${size}`,
-        });
-        expect(res.statusCode).toBe(StatusCodes.OK);
-        // return value is defined in mock runner
-        expect(res.body).toBeTruthy();
-      }
-    });
+        for (const { name: size } of Object.values(THUMBNAIL_SIZES)) {
+          const res = await app.inject({
+            method: 'GET',
+            url: `/${GET_ITEM_ID}/download?size=${size}`,
+          });
+          expect(res.statusCode).toBe(StatusCodes.OK);
+          // return value is defined in mock runner
+          expect(res.body).toBeTruthy();
+        }
+      },
+    );
   });
 
   describe('POST /upload?id=<id>', () => {
@@ -88,56 +96,71 @@ describe('Thumbnail Plugin Tests', () => {
       jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
     });
 
-    it.each(FILE_SERVICES)('%s :Successfully upload thumbnail', async (service) => {
-      const uploadMock = mockCreateUploadFileTask(true)
+    it.each(FILE_SERVICES)(
+      '%s :Successfully upload thumbnail',
+      async (service) => {
+        const uploadMock = mockCreateUploadFileTask(true);
 
-      jest
-        .spyOn(TaskRunner.prototype, 'runMultipleSequences')
-        .mockImplementation(async (sequences) => {
-          return sequences
+        jest
+          .spyOn(TaskRunner.prototype, 'runMultipleSequences')
+          .mockImplementation(async (sequences) => {
+            return sequences;
+          });
+
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service)),
+        );
+
+        const form = new FormData();
+        form.append(
+          'file',
+          createReadStream(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)),
+        );
+
+        const response = await app.inject({
+          method: 'POST',
+          url: `/upload?id=${GET_ITEM_ID}`,
+          payload: form,
+          headers: form.getHeaders(),
         });
 
-      const app = await build(buildAppOptions(buildFileServiceOptions(service)));
+        // upload all thumbnail sizes + original image
+        expect(uploadMock).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length + 1);
+        expect(response.statusCode).toBe(StatusCodes.OK);
+      },
+    );
 
-      const form = new FormData();
-      form.append('file', createReadStream(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)));
+    it.each(FILE_SERVICES)(
+      '%s : Throw if try to upload a non-image file',
+      async (service) => {
+        const uploadMock = mockCreateUploadFileTask(true);
 
-      const response = await app.inject({
-        method: 'POST',
-        url: `/upload?id=${GET_ITEM_ID}`,
-        payload: form,
-        headers: form.getHeaders(),
-      });
+        jest
+          .spyOn(TaskRunner.prototype, 'runMultipleSequences')
+          .mockImplementation(async (sequences) => {
+            return sequences;
+          });
 
-      // upload all thumbnail sizes + original image
-      expect(uploadMock).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length + 1)
-      expect(response.statusCode).toBe(StatusCodes.OK);
-    });
+        const app = await build(
+          buildAppOptions(buildFileServiceOptions(service)),
+        );
 
+        const form = new FormData();
+        form.append(
+          'file',
+          createReadStream(path.resolve(__dirname, FIXTURE_TXT_PATH)),
+        );
 
-    it.each(FILE_SERVICES)('%s : Throw if try to upload a non-image file', async (service) => {
-      const uploadMock = mockCreateUploadFileTask(true)
-
-      jest
-        .spyOn(TaskRunner.prototype, 'runMultipleSequences')
-        .mockImplementation(async (sequences) => {
-          return sequences
-        });
-
-      const app = await build(buildAppOptions(buildFileServiceOptions(service)));
-
-      const form = new FormData();
-      form.append('file', createReadStream(path.resolve(__dirname, FIXTURE_TXT_PATH)));
-
-      const res = await app.inject({
+        const res = await app.inject({
           method: 'POST',
           url: `/upload`,
           payload: form,
           headers: form.getHeaders(),
-      });
+        });
 
-      expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
-      expect(uploadMock).not.toBeCalled()
-    });
+        expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+        expect(uploadMock).not.toBeCalled();
+      },
+    );
   });
 });

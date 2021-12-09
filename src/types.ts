@@ -1,38 +1,35 @@
-
 import { UnknownExtra } from 'graasp';
 import {
-    DownloadPreHookTasksFunction,
-    ServiceMethod,
-    UploadPreHookTasksFunction,
-    GraaspLocalFileItemOptions,
-    GraaspS3FileItemOptions,
+  DownloadPreHookTasksFunction,
+  ServiceMethod,
+  UploadPreHookTasksFunction,
+  GraaspLocalFileItemOptions,
+  GraaspS3FileItemOptions,
 } from 'graasp-plugin-file';
 
 export interface GraaspThumbnailsOptions {
-    serviceMethod: ServiceMethod;
+  serviceMethod: ServiceMethod;
 
-    pathPrefix: string;
+  pathPrefix: string;
 
-    // TODO: use prehook in uploadPrehook.... for public
-    uploadPreHookTasks?: UploadPreHookTasksFunction;
-    downloadPreHookTasks: DownloadPreHookTasksFunction;
+  uploadPreHookTasks?: UploadPreHookTasksFunction;
+  downloadPreHookTasks: DownloadPreHookTasksFunction;
 
-    enableItemsHooks?: boolean;
-    enableAppsHooks?: {
-        appsTemplateRoot: string; // apps/template
-        itemsRoot: string; // items/
-    };
+  enableItemsHooks?: boolean;
+  enableAppsHooks?: {
+    appsTemplateRoot: string;
+    itemsRoot: string;
+  };
 
-    serviceOptions: {
-        s3: GraaspS3FileItemOptions;
-        local: GraaspLocalFileItemOptions;
-    };
+  serviceOptions: {
+    s3: GraaspS3FileItemOptions;
+    local: GraaspLocalFileItemOptions;
+  };
 }
 
 export interface AppItemExtra extends UnknownExtra {
-    app: {
-        url: string;
-        settings: UnknownExtra;
-    };
+  app: {
+    url: string;
+    settings: UnknownExtra;
+  };
 }
-

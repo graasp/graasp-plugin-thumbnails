@@ -29,5 +29,5 @@ export const mockCreateUploadFileTask = (
     .mockImplementation(() => {
       return new Task(data);
     });
-  return mockCreateTask
+  return mockCreateTask;
 };

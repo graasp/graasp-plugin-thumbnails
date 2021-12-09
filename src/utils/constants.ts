@@ -19,4 +19,4 @@ export const ITEM_TYPES = {
   APP: 'app',
   S3: 's3File',
   LOCAL: 'file',
-}
+};

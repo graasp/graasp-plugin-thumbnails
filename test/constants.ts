@@ -1,5 +1,5 @@
-import { ServiceMethod } from 'graasp-plugin-file'
-import { Actor, Item, } from 'graasp';
+import { ServiceMethod } from 'graasp-plugin-file';
+import { Actor, Item } from 'graasp';
 export const ROOT_PATH = './test/files';
 
 export const GET_ITEM_ID = 'dcd6aa46-a4f0-48b4-a872-f907cf646db0';
@@ -27,24 +27,23 @@ export const DEFAULT_S3_OPTIONS = {
   s3UseAccelerateEndpoint: false,
 };
 
-export const buildLocalOptions = ({ pathPrefix = "/prefix/", } = {}) => ({
+export const buildLocalOptions = ({ pathPrefix = '/prefix/' } = {}) => ({
   serviceMethod: ServiceMethod.LOCAL,
   pathPrefix,
   serviceOptions: {
     local: {
-      storageRootPath: "/storageRootPath",
+      storageRootPath: '/storageRootPath',
     },
   },
 });
 
-export const buildS3Options = ({ pathPrefix = "/prefix/" } = {}) => ({
+export const buildS3Options = ({ pathPrefix = '/prefix/' } = {}) => ({
   serviceMethod: ServiceMethod.S3,
   pathPrefix,
   serviceOptions: {
     s3: DEFAULT_S3_OPTIONS,
-  }
+  },
 });
-
 
 export const buildFileServiceOptions = (service) => {
   if (service === ServiceMethod.LOCAL) {
@@ -57,8 +56,8 @@ export const buildFileServiceOptions = (service) => {
 
 export const FILE_SERVICES = [
   // ServiceMethod.LOCAL,
-  ServiceMethod.S3
-]
+  ServiceMethod.S3,
+];
 
-export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg'
-export const FIXTURE_TXT_PATH = './files/1.txt'
+export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg';
+export const FIXTURE_TXT_PATH = './files/1.txt';
