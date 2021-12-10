@@ -1,14 +1,22 @@
 import { createHash } from 'crypto';
+import path from 'path';
+import { THUMBNAIL_PATH_PREFIX } from './constants';
 
 export const hash = (id: string): string =>
   createHash('sha256').update(id).digest('hex');
 
-export const createS3Key = (prefix: string, id: string, size: string): string =>
-  prefix ? `${prefix}/${hash(id)}/${size}` : `${hash(id)}/${size}`;
-export const createFsKey = (prefix: string, id: string, size: string): string =>
-  prefix ? `${prefix}/${hash(id)}/${size}` : `${hash(id)}/${size}`;
-export const createFsFolder = (
-  root: string,
-  prefix: string,
-  id: string,
-): string => (prefix ? `${root}/${prefix}/${hash(id)}` : `${root}/${hash(id)}`);
+export const buildFilePathFromId = (id: string) =>
+  hash(id)
+    .match(/.{1,8}/g)
+    .join('/');
+
+// used for download in public plugin
+export const buildFilePathWithPrefix = (options: {
+  itemId: string;
+  pathPrefix: string;
+  filename: string;
+}) => {
+  const { itemId, filename, pathPrefix } = options;
+  const filepath = buildFilePathFromId(itemId);
+  return path.join(THUMBNAIL_PATH_PREFIX, pathPrefix, filepath, filename);
+};
