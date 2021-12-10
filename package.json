@@ -9,7 +9,7 @@
     "prepack": "yarn build",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "jest test --forceExit --coverage --verbose",
+    "test": "jest --forceExit --coverage --verbose",
     "test:watch": "yarn test --watchAll"
   },
   "repository": {
@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file#3/fixS3",
-    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item#18/newFilePlugin",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
+    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "sharp": "0.29.1"
   },
   "devDependencies": {

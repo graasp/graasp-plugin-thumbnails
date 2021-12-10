@@ -18,7 +18,7 @@ import {
 } from './utils/constants';
 import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
-import path from 'path/posix';
+import path from 'path';
 
 declare module 'fastify' {
   interface FastifyInstance {
