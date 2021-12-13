@@ -26,10 +26,12 @@ const build = async ({
   runner,
   itemTaskManager,
   options,
+  getAppIdByUrl
 }: {
   runner: TaskRunner;
   itemTaskManager: ItemTaskManager;
   options?: GraaspThumbnailsOptions;
+  getAppIdByUrl?: Function
 }): Promise<FastifyInstance> => {
   const app = fastify();
   app.addSchema(schemas);
@@ -39,6 +41,10 @@ const build = async ({
   app.decorate('items', {
     taskManager: itemTaskManager,
   });
+  app.decorate('appService', {
+    getAppIdByUrl
+  })
+  app.decorate('db', { pool: null })
 
   await app.register(plugin, options);
 

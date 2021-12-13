@@ -226,23 +226,25 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               (extra as AppItemExtra).app.url,
               db.pool,
             )
-          ).id;
+          )?.id
 
           // copy thumbnails of app template for copied item
-          const tasks = THUMBNAIL_SIZES.map(({ name }) =>
-            fileTaskManager.createCopyFileTask(actor, {
-              newId: id,
-              originalPath: buildAppsTemplatesRoot(appId, name),
-              newFilePath: buildFilePathWithPrefix({
-                itemId: id,
-                pathPrefix: itemsRoot,
-                filename: name,
+          if (appId) {
+            const tasks = THUMBNAIL_SIZES.map(({ name }) =>
+              fileTaskManager.createCopyFileTask(actor, {
+                newId: id,
+                originalPath: buildAppsTemplatesRoot(appId, name),
+                newFilePath: buildFilePathWithPrefix({
+                  itemId: id,
+                  pathPrefix: itemsRoot,
+                  filename: name,
+                }),
+                mimetype: THUMBNAIL_MIMETYPE,
               }),
-              mimetype: THUMBNAIL_MIMETYPE,
-            }),
-          );
+            );
 
-          await runner.runMultiple(tasks, log);
+            await runner.runMultiple(tasks, log);
+          }
         }
       },
     );
