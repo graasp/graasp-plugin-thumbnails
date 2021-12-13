@@ -31,7 +31,7 @@ const buildAppOptions = (options) => ({
   },
 });
 
-describe('Test hooks', () => {
+describe('Item hooks', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -117,7 +117,7 @@ describe('Test hooks', () => {
                   id: v4(),
                   type: ITEM_TYPES.LOCAL,
                   extra: {
-                    file: {
+                    [ITEM_TYPES.LOCAL]: {
                       mimetype: THUMBNAIL_MIMETYPE,
                       path: `${ITEM_S3_KEY}/filepath`,
                     },
@@ -149,7 +149,7 @@ describe('Test hooks', () => {
                 id: v4(),
                 type: ITEM_TYPES.APP,
                 extra: {
-                  file: {
+                  [ITEM_TYPES.LOCAL]: {
                     mimetype: THUMBNAIL_MIMETYPE,
                     path: `${ITEM_S3_KEY}/filepath`,
                   },
@@ -179,7 +179,7 @@ describe('Test hooks', () => {
                 id: v4(),
                 type: ITEM_TYPES.APP,
                 extra: {
-                  file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
+                  [ITEM_TYPES.LOCAL]: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
                 },
               };
               const actor = GRAASP_ACTOR;
