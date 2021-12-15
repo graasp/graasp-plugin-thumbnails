@@ -1,4 +1,5 @@
 import fastify, { FastifyInstance } from 'fastify';
+import { DatabaseTransactionHandler } from 'graasp';
 import { ItemTaskManager, TaskRunner } from 'graasp-test';
 import plugin, { GraaspThumbnailsOptions } from '../src/index';
 import { GRAASP_ACTOR } from './constants';
@@ -31,7 +32,7 @@ const build = async ({
   runner: TaskRunner;
   itemTaskManager: ItemTaskManager;
   options?: GraaspThumbnailsOptions;
-  getAppIdByUrl?: Function
+  getAppIdByUrl?: (url: string, db: DatabaseTransactionHandler) => { id: string };
 }): Promise<FastifyInstance> => {
   const app = fastify();
   app.addSchema(schemas);
@@ -43,8 +44,8 @@ const build = async ({
   });
   app.decorate('appService', {
     getAppIdByUrl
-  })
-  app.decorate('db', { pool: null })
+  });
+  app.decorate('db', { pool: null });
 
   await app.register(plugin, options);
 

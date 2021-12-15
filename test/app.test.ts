@@ -12,8 +12,6 @@ import {
   FIXTURE_THUMBNAIL_PATH,
   FIXTURE_TXT_PATH,
   GET_ITEM_ID,
-  GRAASP_ACTOR,
-  ITEM_S3_KEY,
 } from './constants';
 import { mockCreateUploadFileTask } from './mock';
 import { THUMBNAIL_SIZES } from '../src/utils/constants';
@@ -33,8 +31,8 @@ const buildAppOptions = (options) => ({
 describe('Thumbnail Plugin Tests', () => {
   describe('Options', () => {
     beforeEach(() => {
-      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => {});
-      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => {});
+      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => true);
+      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => true);
     });
 
     describe('Local', () => {
@@ -153,7 +151,7 @@ describe('Thumbnail Plugin Tests', () => {
 
         const res = await app.inject({
           method: 'POST',
-          url: `/upload`,
+          url: '/upload',
           payload: form,
           headers: form.getHeaders(),
         });

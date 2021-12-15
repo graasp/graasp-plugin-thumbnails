@@ -49,9 +49,9 @@ describe('App hooks', () => {
                 .spyOn(FileTaskManager.prototype, 'createCopyFileTask')
                 .mockImplementation(() => new MockTask(true));
 
-            const appUrl = 'appURL'
-            const id = v4()
-            const getAppIdByUrl = jest.fn().mockResolvedValue({ id })
+            const appUrl = 'appURL';
+            const id = v4();
+            const getAppIdByUrl = jest.fn().mockResolvedValue({ id });
 
             jest
                 .spyOn(runner, 'setTaskPostHookHandler')
@@ -107,8 +107,8 @@ describe('App hooks', () => {
                     .spyOn(FileTaskManager.prototype, 'createCopyFileTask')
                     .mockImplementation(() => new MockTask(true));
 
-                const appUrl = 'appURL'
-                const getAppIdByUrl = jest.fn().mockResolvedValue({ id: undefined })
+                const appUrl = 'appURL';
+                const getAppIdByUrl = jest.fn().mockResolvedValue({ id: undefined });
 
                 jest
                     .spyOn(runner, 'setTaskPostHookHandler')
