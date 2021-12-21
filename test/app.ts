@@ -1,7 +1,8 @@
-import fastify, { FastifyInstance } from 'fastify';
-import { DatabaseTransactionHandler } from 'graasp';
+import fastify, { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { DatabaseTransactionHandler, MemberTaskManager } from 'graasp';
+import { PublicItemTaskManager } from 'graasp-plugin-public';
 import { ItemTaskManager, TaskRunner } from 'graasp-test';
-import plugin, { GraaspThumbnailsOptions } from '../src/index';
+import { Server } from 'http';
 import { GRAASP_ACTOR } from './constants';
 
 const schemas = {
@@ -23,17 +24,26 @@ const schemas = {
   },
 };
 
-const build = async ({
+async function build<E>({
+  plugin,
   runner,
   itemTaskManager,
   options,
-  getAppIdByUrl
+  memberTaskManager,
+  getAppIdByUrl,
+  publicItemTaskManager,
 }: {
+  plugin: FastifyPluginAsync<E, Server>;
   runner: TaskRunner;
   itemTaskManager: ItemTaskManager;
-  options?: GraaspThumbnailsOptions;
-  getAppIdByUrl?: (url: string, db: DatabaseTransactionHandler) => { id: string };
-}): Promise<FastifyInstance> => {
+  memberTaskManager?: MemberTaskManager;
+  options?: E;
+  getAppIdByUrl?: (
+    url: string,
+    db: DatabaseTransactionHandler,
+  ) => { id: string };
+  publicItemTaskManager?: PublicItemTaskManager;
+}): Promise<FastifyInstance> {
   const app = fastify();
   app.addSchema(schemas);
 
@@ -42,13 +52,21 @@ const build = async ({
   app.decorate('items', {
     taskManager: itemTaskManager,
   });
+  app.decorate('members', {
+    taskManager: memberTaskManager ?? {},
+  });
   app.decorate('appService', {
-    getAppIdByUrl
+    getAppIdByUrl,
   });
   app.decorate('db', { pool: null });
+  app.decorate('public', {
+    graaspActor: GRAASP_ACTOR,
+    items: { taskManager: publicItemTaskManager ?? {} },
+  });
 
   await app.register(plugin, options);
 
   return app;
-};
+}
+
 export default build;

@@ -1,6 +1,7 @@
 import FormData from 'form-data';
 import { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
+import plugin from '../src/index';
 import path from 'path';
 import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
 import build from './app';
@@ -20,6 +21,7 @@ const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
 
 const buildAppOptions = (options) => ({
+  plugin,
   itemTaskManager,
   runner,
   options: {
@@ -31,8 +33,12 @@ const buildAppOptions = (options) => ({
 describe('Thumbnail Plugin Tests', () => {
   describe('Options', () => {
     beforeEach(() => {
-      jest.spyOn(runner, 'setTaskPostHookHandler').mockImplementation(() => true);
-      jest.spyOn(runner, 'setTaskPreHookHandler').mockImplementation(() => true);
+      jest
+        .spyOn(runner, 'setTaskPostHookHandler')
+        .mockImplementation(() => true);
+      jest
+        .spyOn(runner, 'setTaskPreHookHandler')
+        .mockImplementation(() => true);
     });
 
     describe('Local', () => {
