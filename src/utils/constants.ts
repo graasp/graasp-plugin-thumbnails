@@ -20,3 +20,8 @@ export const ITEM_TYPES = {
   S3: 's3File',
   LOCAL: 'file',
 };
+
+export const AVATARS_ROUTE = '/avatars';
+export const THUMBNAIL_ROUTE = '/thumbnails';
+export const MEMBERS_ROUTE = '/members';
+export const ITEMS_ROUTE = '/items';

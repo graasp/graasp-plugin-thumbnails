@@ -20,14 +20,6 @@ import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 import path from 'path';
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    appService?: {
-      getAppIdByUrl?: Function;
-    };
-  }
-}
-
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
@@ -226,7 +218,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               (extra as AppItemExtra).app.url,
               db.pool,
             )
-          )?.id
+          )?.id;
 
           // copy thumbnails of app template for copied item
           if (appId) {

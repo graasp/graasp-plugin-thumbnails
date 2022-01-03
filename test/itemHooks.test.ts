@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
 import path from 'path';
+import plugin from '../src/plugin';
 import { readFile } from 'fs/promises';
 import build from './app';
 import {
@@ -23,6 +24,7 @@ const runner = new TaskRunner();
 
 const buildAppOptions = (options) => ({
   itemTaskManager,
+  plugin,
   runner,
   options: {
     downloadPreHookTasks: async () => [new MockTask({ filepath: 'filepath' })],
@@ -179,7 +181,10 @@ describe('Item hooks', () => {
                 id: v4(),
                 type: ITEM_TYPES.APP,
                 extra: {
-                  [ITEM_TYPES.LOCAL]: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
+                  [ITEM_TYPES.LOCAL]: {
+                    mimetype: 'txt',
+                    path: `${ITEM_S3_KEY}/filepath`,
+                  },
                 },
               };
               const actor = GRAASP_ACTOR;

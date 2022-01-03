@@ -1,4 +1,4 @@
-import { UnknownExtra } from 'graasp';
+import { DatabaseTransactionHandler, UnknownExtra } from 'graasp';
 import {
   DownloadPreHookTasksFunction,
   ServiceMethod,
@@ -6,6 +6,17 @@ import {
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
 } from 'graasp-plugin-file';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    appService?: {
+      getAppIdByUrl?: (
+        url: string,
+        db: DatabaseTransactionHandler,
+      ) => { id: string };
+    };
+  }
+}
 
 export interface GraaspThumbnailsOptions {
   serviceMethod: ServiceMethod;
@@ -26,6 +37,15 @@ export interface GraaspThumbnailsOptions {
     local: GraaspLocalFileItemOptions;
   };
 }
+
+export type GraaspPublicThumbnailsOptions = {
+  serviceMethod;
+  prefixes: { avatarsPrefix: string; thumbnailsPrefix: string };
+  serviceOptions: {
+    s3: GraaspS3FileItemOptions;
+    local: GraaspLocalFileItemOptions;
+  };
+};
 
 export interface AppItemExtra extends UnknownExtra {
   app: {

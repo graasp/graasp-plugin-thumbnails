@@ -1,8 +1,9 @@
 import { ServiceMethod } from 'graasp-plugin-file';
 import { Actor, Item } from 'graasp';
+import { v4 } from 'uuid';
 export const ROOT_PATH = './test/files';
 
-export const GET_ITEM_ID = 'dcd6aa46-a4f0-48b4-a872-f907cf646db0';
+export const GET_ITEM_ID = v4();
 export const ITEM_S3_KEY =
   '35b6a6247b6a509e484bc0d91a9579d7d7ed9ddc5ee46f389ac562b2a1d9f1ec';
 
@@ -16,7 +17,7 @@ export const ITEM_FILE: Partial<Item> = {
 };
 
 export const GRAASP_ACTOR: Actor = {
-  id: 'actorid',
+  id: v4(),
 };
 
 export const DEFAULT_S3_OPTIONS = {
@@ -45,11 +46,44 @@ export const buildS3Options = ({ pathPrefix = '/prefix/' } = {}) => ({
   },
 });
 
-export const buildFileServiceOptions = (service) => {
+export const buildPublicLocalOptions = () => ({
+  serviceMethod: ServiceMethod.LOCAL,
+  prefixes: {
+    avatarsPrefix: 'avatars',
+    thumbnailsPrefix: 'thumbnails',
+  },
+  serviceOptions: {
+    local: {
+      storageRootPath: '/storageRootPath',
+    },
+  },
+});
+
+export const buildPublicS3Options = () => ({
+  serviceMethod: ServiceMethod.S3,
+  prefixes: {
+    avatarsPrefix: 'avatars',
+    thumbnailsPrefix: 'thumbnails',
+  },
+  serviceOptions: {
+    s3: DEFAULT_S3_OPTIONS,
+  },
+});
+
+export const buildFileServiceOptions = (service: ServiceMethod) => {
   if (service === ServiceMethod.LOCAL) {
     return buildLocalOptions();
   } else if (service === ServiceMethod.S3) {
     return buildS3Options();
+  }
+  throw new Error('Service is not defined');
+};
+
+export const buildPublicFileServiceOptions = (service: ServiceMethod) => {
+  if (service === ServiceMethod.LOCAL) {
+    return buildPublicLocalOptions();
+  } else if (service === ServiceMethod.S3) {
+    return buildPublicS3Options();
   }
   throw new Error('Service is not defined');
 };
