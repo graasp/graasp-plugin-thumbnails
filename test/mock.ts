@@ -22,7 +22,7 @@ export const mockCreateGetOfItemTaskSequence = (
 
 export const mockCreateUploadFileTask = (
   data: boolean | Error,
-  shouldThrow?: boolean,
+  _shouldThrow?: boolean,
 ): jest.SpyInstance => {
   const mockCreateTask = jest
     .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
