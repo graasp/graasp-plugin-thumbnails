@@ -7,7 +7,7 @@
     "build": "tsc",
     "prepare": "yarn build",
     "prepack": "yarn build",
-    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\"  --fix",
+    "lint": "tsc --noEmit && eslint \"{src,test}/**/*.{js,ts}\"  --fix",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
     "test": "jest --forceExit --coverage --verbose",
@@ -27,9 +27,9 @@
   },
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file#5/updateDep",
-    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item#22/updateDep",
-    "graasp-plugin-public": "github:graasp/graasp-plugin-public#34/updateDep",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
+    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
+    "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "sharp": "0.29.3"
   },
   "devDependencies": {
@@ -44,7 +44,7 @@
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
     "fastify": "3.25.3",
-    "graasp-test": "github:graasp/graasp-test#13/updateDep",
+    "graasp-test": "github:graasp/graasp-test",
     "http-status-codes": "2.2.0",
     "husky": "7.0.4",
     "jest": "27.4.7",
