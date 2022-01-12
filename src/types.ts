@@ -5,6 +5,8 @@ import {
   UploadPreHookTasksFunction,
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
+  DownloadPostHookTasksFunction,
+  UploadPostHookTasksFunction,
 } from 'graasp-plugin-file';
 
 declare module 'fastify' {
@@ -24,7 +26,9 @@ export interface GraaspThumbnailsOptions {
   pathPrefix: string;
 
   uploadPreHookTasks?: UploadPreHookTasksFunction;
+  uploadPostHookTasks?: UploadPostHookTasksFunction;
   downloadPreHookTasks: DownloadPreHookTasksFunction;
+  downloadPostHookTasks?: DownloadPostHookTasksFunction;
 
   enableItemsHooks?: boolean;
   enableAppsHooks?: {

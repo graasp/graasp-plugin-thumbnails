@@ -94,14 +94,16 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       return options?.uploadPreHookTasks?.(data, auth);
     },
 
-    uploadPostHookTasks: async ({ file, itemId }, { member }) => {
+    uploadPostHookTasks: async (data, auth) => {
+      const { file, itemId } = data;
+      const { member } = auth;
       const thumbnails = THUMBNAIL_SIZES.map(({ name, width }) => ({
         size: name,
         image: sharp(file).resize({ width }).toFormat(THUMBNAIL_FORMAT),
       }));
 
       // it might not be saved correctly in the original upload
-      return await Promise.all(
+      const thumbnailGenerationTasks = await Promise.all(
         thumbnails.map(async ({ size: filename, image }) =>
           fileTaskManager.createUploadFileTask(member, {
             file: await image.toBuffer(),
@@ -110,8 +112,14 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           }),
         ),
       );
+
+      const tasksFromOptions =
+        (await options?.uploadPostHookTasks?.(data, auth)) ?? [];
+
+      return [...thumbnailGenerationTasks, ...tasksFromOptions];
     },
     downloadPreHookTasks: options.downloadPreHookTasks,
+    downloadPostHookTasks: options.downloadPostHookTasks,
   });
 
   if (enableItemsHooks) {
