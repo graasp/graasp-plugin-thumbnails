@@ -3283,14 +3283,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#24/hasThumbnail":
+"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=640072ddc76b4bab39814483da3560c44ee67ff9"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=3694c96eea839edc2ca894c77461e916bf341a26"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: 7b5be0d721b5fb9765edb67f5e12e41a195e2acfe26df05ce53f76cdd9c90650165f3ccb561a77a3490ca59a72884bc5bfa62d8f647482dbc688b8ce6fa330cd
+  checksum: 054ebea4e3de6b0bc7c0a6d740a19fd09386a299677bac3b290179a1dbb1695c1281512f575217fbb117de9afe3e82e38443df0646b0aa6f20ad6bec910f2a44
   languageName: node
   linkType: hard
 
@@ -3334,7 +3334,7 @@ __metadata:
     eslint: ^8.6.0
     fastify: 3.25.3
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#24/hasThumbnail"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-test: "github:graasp/graasp-test"
     http-status-codes: 2.2.0
