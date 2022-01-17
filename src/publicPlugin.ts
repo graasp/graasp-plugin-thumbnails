@@ -32,6 +32,8 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
       items: { taskManager: pTM },
     },
   } = fastify;
+
+  // items' thumbnails
   fastify.register(thumbnailsPlugin, {
     serviceMethod: serviceMethod,
     serviceOptions,
@@ -59,6 +61,7 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
     prefix: `${ITEMS_ROUTE}${THUMBNAIL_ROUTE}`,
   });
 
+  // members' avatars
   fastify.register(thumbnailsPlugin, {
     serviceMethod: serviceMethod,
     serviceOptions,

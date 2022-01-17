@@ -85,6 +85,7 @@ describe('Thumbnail Plugin Tests', () => {
             method: 'GET',
             url: `/${GET_ITEM_ID}/download?size=${size}`,
           });
+
           expect(res.statusCode).toBe(StatusCodes.OK);
           // return value is defined in mock runner
           expect(res.body).toBeTruthy();
