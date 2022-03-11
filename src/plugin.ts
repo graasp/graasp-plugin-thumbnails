@@ -19,6 +19,7 @@ import {
 import { buildFilePathWithPrefix } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 import path from 'path';
+import { UploadFileNotImageError } from './utils/errors';
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
@@ -88,7 +89,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     uploadPreHookTasks: (data, auth) => {
       // check file is an image
       if (!data.mimetype.includes('image')) {
-        throw new Error('File is not an image');
+        throw new UploadFileNotImageError();
       }
 
       return options?.uploadPreHookTasks?.(data, auth);

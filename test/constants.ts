@@ -88,10 +88,7 @@ export const buildPublicFileServiceOptions = (service: ServiceMethod) => {
   throw new Error('Service is not defined');
 };
 
-export const FILE_SERVICES = [
-  // ServiceMethod.LOCAL,
-  ServiceMethod.S3,
-];
+export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3];
 
 export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg';
 export const FIXTURE_TXT_PATH = './files/1.txt';
