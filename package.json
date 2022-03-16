@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file#11/returnFile",
+    "@graasp/translations": "github:graasp/graasp-translations#5/thumbnailMessages",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "sharp": "0.30.2"

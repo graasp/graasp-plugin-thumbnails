@@ -1,3 +1,4 @@
+import { FAILURE_MESSAGES } from '@graasp/translations';
 import { GraaspErrorDetails, GraaspError } from 'graasp';
 import { StatusCodes } from 'http-status-codes';
 
@@ -28,7 +29,7 @@ export class UploadFileNotImageError extends GraaspBaseError {
       {
         code: 'GPTERR001',
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Submitted file is not an image',
+        message: FAILURE_MESSAGES.FILE_NOT_IMAGE,
       },
       data,
     );
