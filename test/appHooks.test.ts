@@ -10,6 +10,7 @@ import {
 } from './constants';
 import { ITEM_TYPES } from '../src/utils/constants';
 import { FileTaskManager } from 'graasp-plugin-file';
+import { mockSetTaskPostHookHandler } from './mock';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -73,27 +74,26 @@ describe('App hooks', () => {
 
       build(buildAppOptions({ ...buildLocalOptions(), getAppIdByUrl }));
     });
+
     it.each(FILE_SERVICES)('%s : Run post hook only for apps', async () => {
       const copyMock = jest
         .spyOn(FileTaskManager.prototype, 'createCopyFileTask')
         .mockImplementation(() => new MockTask(true));
 
-      jest
-        .spyOn(runner, 'setTaskPostHookHandler')
-        .mockImplementation(async (name, fn) => {
-          if (name === itemTaskManager.getCreateTaskName()) {
-            const item = {
-              id: v4(),
-              type: ITEM_TYPES.LOCAL,
-              extra: {
-                file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
-              },
-            };
-            const actor = GRAASP_ACTOR;
-            await fn(item, actor, { log: undefined });
-            expect(copyMock).toHaveBeenCalledTimes(0);
-          }
-        });
+      mockSetTaskPostHookHandler(runner, async (name, fn) => {
+        if (name === itemTaskManager.getCreateTaskName()) {
+          const item = {
+            id: v4(),
+            type: ITEM_TYPES.LOCAL,
+            extra: {
+              file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
+            },
+          };
+          const actor = GRAASP_ACTOR;
+          await fn(item, actor, { log: undefined });
+          expect(copyMock).toHaveBeenCalledTimes(0);
+        }
+      });
       build(buildAppOptions(buildLocalOptions()));
     });
     it.each(FILE_SERVICES)(

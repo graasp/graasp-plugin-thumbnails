@@ -31,3 +31,7 @@ export const mockCreateUploadFileTask = (
     });
   return mockCreateTask;
 };
+
+export const mockSetTaskPostHookHandler = (runner, f) => {
+  runner.setTaskPostHookHandler = f;
+};
