@@ -28,8 +28,8 @@
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
     "@graasp/translations": "github:graasp/graasp-translations",
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
-    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#13/redirect",
+    "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item#30/updateDep",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "sharp": "0.30.2"
   },

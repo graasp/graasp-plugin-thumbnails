@@ -3308,26 +3308,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
+"graasp-plugin-file-item@github:graasp/graasp-plugin-file-item#30/updateDep":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=5c019e2a21f5fbcf5a005d14e2a571a8c1b3a501"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=96f71c7220f88fed4c94775cdae3c004612faa8d"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
-    graasp-plugin-file: "github:graasp/graasp-plugin-file"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#13/redirect"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: 419e051af8a5560234c714bb721005550a92616504f1d35eb09b7176ffe1555376dfd1b87a6ea829bc89bea14bc58d6300d3fd49b8c2b3ffcf3b2a01ff14ecae
+  checksum: 2f8e93db42455b282b99027405b41c4d0136c2cf61e57c63145f8fd422bd431d548f92c8f39cbdb06e1a45579a93c61982b62e38bca05da72a2033f707bbcafb
   languageName: node
   linkType: hard
 
-"graasp-plugin-file@github:graasp/graasp-plugin-file":
+"graasp-plugin-file@github:graasp/graasp-plugin-file#13/redirect":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=0f1a3a7972c5aaa129aaec99fa1cc57532a8d7f0"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=d011e41a7294e73f4293fcff31991905d0d8fdbd"
   dependencies:
     aws-sdk: 2.1074.0
     content-disposition: 0.5.4
     fastify-multipart: 5.3.1
     http-status-codes: 2.2.0
-  checksum: 12055eea9f21d99f28b0625bfd1a8c76a64b5b176341b376a6b4bf657550aa01ba6b25925cf1fb6b01eec5ca1c9c91120d02870d7798e09ee75bc57234765e85
+    node-fetch: 2
+  checksum: aa141edf29e9a8181f5caee38d2874e97a597e32b08badd73cbf17b3f5f0d0d14b67b83a7063fefba6e962db17ad1f7cd442d8491bf606424b8ce89e895b9499
   languageName: node
   linkType: hard
 
@@ -3359,8 +3360,8 @@ __metadata:
     "@typescript-eslint/parser": ^5.14.0
     eslint: ^8.10.0
     fastify: 3.27.4
-    graasp-plugin-file: "github:graasp/graasp-plugin-file"
-    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file#13/redirect"
+    graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item#30/updateDep"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
     graasp-test: "github:graasp/graasp-test"
     http-status-codes: 2.2.0
@@ -4964,6 +4965,20 @@ __metadata:
   dependencies:
     node-gyp: latest
   checksum: 3de396e23cc209f539c704583e8e99c148850226f6e389a641b92e8967953713228109f919765abc1f4355e801e8f41842f96210b8d61c7dcc10a477002dcf00
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:2":
+  version: 2.6.7
+  resolution: "node-fetch@npm:2.6.7"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: 8d816ffd1ee22cab8301c7756ef04f3437f18dace86a1dae22cf81db8ef29c0bf6655f3215cb0cdb22b420b6fe141e64b26905e7f33f9377a7fa59135ea3e10b
   languageName: node
   linkType: hard
 
@@ -6653,6 +6668,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tr46@npm:~0.0.3":
+  version: 0.0.3
+  resolution: "tr46@npm:0.0.3"
+  checksum: 726321c5eaf41b5002e17ffbd1fb7245999a073e8979085dacd47c4b4e8068ff5777142fc6726d6ca1fd2ff16921b48788b87225cbc57c72636f6efa8efbffe3
+  languageName: node
+  linkType: hard
+
 "trim-newlines@npm:^3.0.0":
   version: 3.0.1
   resolution: "trim-newlines@npm:3.0.1"
@@ -7027,6 +7049,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"webidl-conversions@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "webidl-conversions@npm:3.0.1"
+  checksum: c92a0a6ab95314bde9c32e1d0a6dfac83b578f8fa5f21e675bc2706ed6981bc26b7eb7e6a1fab158e5ce4adf9caa4a0aee49a52505d4d13c7be545f15021b17c
+  languageName: node
+  linkType: hard
+
 "webidl-conversions@npm:^4.0.2":
   version: 4.0.2
   resolution: "webidl-conversions@npm:4.0.2"
@@ -7061,6 +7090,16 @@ __metadata:
   version: 2.3.0
   resolution: "whatwg-mimetype@npm:2.3.0"
   checksum: 23eb885940bcbcca4ff841c40a78e9cbb893ec42743993a42bf7aed16085b048b44b06f3402018931687153550f9a32d259dfa524e4f03577ab898b6965e5383
+  languageName: node
+  linkType: hard
+
+"whatwg-url@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "whatwg-url@npm:5.0.0"
+  dependencies:
+    tr46: ~0.0.3
+    webidl-conversions: ^3.0.0
+  checksum: b8daed4ad3356cc4899048a15b2c143a9aed0dfae1f611ebd55073310c7b910f522ad75d727346ad64203d7e6c79ef25eafd465f4d12775ca44b90fa82ed9e2c
   languageName: node
   linkType: hard
 
