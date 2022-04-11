@@ -2,7 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { Actor, Item, UnknownExtra } from 'graasp';
 import sharp, { Sharp } from 'sharp';
 import { Stream } from 'stream';
-import fs from 'fs';
+import fs, { mkdirSync, ReadStream } from 'fs';
 import path from 'path';
 import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
@@ -18,6 +18,7 @@ import {
   THUMBNAIL_PATH_PREFIX,
   ITEM_TYPES,
   THUMBNAIL_MIMETYPE,
+  TMP_FOLDER,
 } from './utils/constants';
 import { buildFilePathWithPrefix, buildThumbnailPath } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
@@ -59,23 +60,28 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     }
   }
 
+  // create tmp folder
+  mkdirSync(TMP_FOLDER, { recursive: true });
+
   const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
 
   const buildFilePath = (itemId: string, filename: string) =>
     buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
-  const createThumbnails = (imageStream: Stream) => {
+  const createThumbnails = (imageStream: Stream, itemId: string) => {
     // generate sizes for given image
-    const files: { size: string; image: Sharp }[] = [];
-    for (const { name, width } of THUMBNAIL_SIZES) {
+    const files: { size: string; fileStream: ReadStream }[] = [];
+    Promise.all(THUMBNAIL_SIZES.map(async ({ name, width }) => {
+      // save resize image in tmp
       const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
-      // const filepath = buildThumbnailPath(width);
-      // await imageStream.pipe(pipeline)//.toFile(filepath);
+      const filepath = buildThumbnailPath(name, itemId);
+      await imageStream.pipe(pipeline).toFile(filepath);
+
       files.push({
         size: name,
-        image: imageStream.pipe(pipeline),
+        fileStream: fs.createReadStream(filepath)
       });
-    }
+    }));
 
     return files;
   };
@@ -104,10 +110,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
       // }));
 
       // it might not be saved correctly in the original upload
-      const thumbnails = createThumbnails(file);
-      const thumbnailGenerationTasks = thumbnails.map(({ size, image }) =>
+      const thumbnails = createThumbnails(file, itemId);
+      const thumbnailGenerationTasks = thumbnails.map(({ size, fileStream }) =>
         fileTaskManager.createUploadFileTask(member, {
-          file: image,
+          file: fileStream,
           filepath: buildFilePath(itemId, size),
           mimetype: THUMBNAIL_MIMETYPE,
         }),
@@ -196,12 +202,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             });
             const imageStream = (await runner.runSingle(task)) as Stream;
 
-            const thumbnails = createThumbnails(imageStream);
+            const thumbnails = createThumbnails(imageStream, item.id);
 
             // create thumbnails for new image
-            const tasks = thumbnails.map(({ size: filename, image }) => {
+            const tasks = thumbnails.map(({ size: filename, fileStream }) => {
               return fileTaskManager.createUploadFileTask(actor, {
-                file: image,
+                file: fileStream,
                 filepath: buildFilePath(id, filename),
                 mimetype: THUMBNAIL_FORMAT,
               });

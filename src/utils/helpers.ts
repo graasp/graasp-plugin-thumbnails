@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import path from 'path';
-import { THUMBNAIL_PATH_PREFIX } from './constants';
+import { THUMBNAIL_PATH_PREFIX, TMP_FOLDER } from './constants';
 
 export const hash = (id: string): string =>
   createHash('sha256').update(id).digest('hex');
@@ -21,4 +21,4 @@ export const buildFilePathWithPrefix = (options: {
   return path.join(THUMBNAIL_PATH_PREFIX, pathPrefix, filepath, filename);
 };
 
-export const buildThumbnailPath = (width) => 'tmp-' + width;
+export const buildThumbnailPath = (name, itemId) => `${TMP_FOLDER}/${itemId}-${name}`;

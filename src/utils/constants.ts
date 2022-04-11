@@ -25,3 +25,5 @@ export const AVATARS_ROUTE = '/avatars';
 export const THUMBNAIL_ROUTE = '/thumbnails';
 export const MEMBERS_ROUTE = '/members';
 export const ITEMS_ROUTE = '/items';
+
+export const TMP_FOLDER = './tmp';
