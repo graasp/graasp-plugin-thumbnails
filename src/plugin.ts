@@ -1,6 +1,9 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Actor, Item, UnknownExtra } from 'graasp';
-import sharp from 'sharp';
+import sharp, { Sharp } from 'sharp';
+import { Stream } from 'stream';
+import fs from 'fs';
+import path from 'path';
 import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
 import {
@@ -16,9 +19,8 @@ import {
   ITEM_TYPES,
   THUMBNAIL_MIMETYPE,
 } from './utils/constants';
-import { buildFilePathWithPrefix } from './utils/helpers';
+import { buildFilePathWithPrefix, buildThumbnailPath } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
-import path from 'path';
 import { UploadFileNotImageError } from './utils/errors';
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
@@ -62,20 +64,18 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   const buildFilePath = (itemId: string, filename: string) =>
     buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
-  const createThumbnails = async (item: Item<UnknownExtra>, actor: Actor) => {
-    // get original image
-    const filename = getFilePathFromItemExtra(
-      serviceMethod,
-      item.extra as FileItemExtra,
-    );
-    const task = fileTaskManager.createGetFileBufferTask(actor, { filename });
-    const originalImage = await runner.runSingle(task);
-
+  const createThumbnails = (imageStream: Stream) => {
     // generate sizes for given image
-    const files = THUMBNAIL_SIZES.map(({ name, width }) => ({
-      size: name,
-      image: sharp(originalImage).resize({ width }).toFormat(THUMBNAIL_FORMAT),
-    }));
+    const files: { size: string; image: Sharp }[] = [];
+    for (const { name, width } of THUMBNAIL_SIZES) {
+      const pipeline = sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT);
+      // const filepath = buildThumbnailPath(width);
+      // await imageStream.pipe(pipeline)//.toFile(filepath);
+      files.push({
+        size: name,
+        image: imageStream.pipe(pipeline),
+      });
+    }
 
     return files;
   };
@@ -98,20 +98,19 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     uploadPostHookTasks: async (data, auth) => {
       const { file, itemId } = data;
       const { member } = auth;
-      const thumbnails = THUMBNAIL_SIZES.map(({ name, width }) => ({
-        size: name,
-        image: sharp(file).resize({ width }).toFormat(THUMBNAIL_FORMAT),
-      }));
+      // const thumbnails = THUMBNAIL_SIZES.map(({ name, width }) => ({
+      //   size: name,
+      //   image: sharp().resize({ width }).toFormat(THUMBNAIL_FORMAT).pipe(file),
+      // }));
 
       // it might not be saved correctly in the original upload
-      const thumbnailGenerationTasks = await Promise.all(
-        thumbnails.map(async ({ size: filename, image }) =>
-          fileTaskManager.createUploadFileTask(member, {
-            file: await image.toBuffer(),
-            filepath: buildFilePath(itemId, filename),
-            mimetype: THUMBNAIL_MIMETYPE,
-          }),
-        ),
+      const thumbnails = createThumbnails(file);
+      const thumbnailGenerationTasks = thumbnails.map(({ size, image }) =>
+        fileTaskManager.createUploadFileTask(member, {
+          file: image,
+          filepath: buildFilePath(itemId, size),
+          mimetype: THUMBNAIL_MIMETYPE,
+        }),
       );
 
       const tasksFromOptions =
@@ -186,18 +185,27 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
           try {
-            const thumbnails = await createThumbnails(item, actor);
+            // get original image
+            const filepath = getFilePathFromItemExtra(
+              serviceMethod,
+              item.extra as FileItemExtra,
+            );
+            const task = fileTaskManager.createDownloadFileTask(actor, {
+              filepath,
+              itemId: item.id,
+            });
+            const imageStream = (await runner.runSingle(task)) as Stream;
+
+            const thumbnails = createThumbnails(imageStream);
 
             // create thumbnails for new image
-            const tasks = await Promise.all(
-              thumbnails.map(async ({ size: filename, image }) => {
-                return fileTaskManager.createUploadFileTask(actor, {
-                  file: await image.toBuffer(),
-                  filepath: buildFilePath(id, filename),
-                  mimetype: THUMBNAIL_FORMAT,
-                });
-              }),
-            );
+            const tasks = thumbnails.map(({ size: filename, image }) => {
+              return fileTaskManager.createUploadFileTask(actor, {
+                file: image,
+                filepath: buildFilePath(id, filename),
+                mimetype: THUMBNAIL_FORMAT,
+              });
+            });
 
             await runner.runMultiple(tasks, log);
           } catch (err) {

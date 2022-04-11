@@ -20,3 +20,5 @@ export const buildFilePathWithPrefix = (options: {
   const filepath = buildFilePathFromId(itemId);
   return path.join(THUMBNAIL_PATH_PREFIX, pathPrefix, filepath, filename);
 };
+
+export const buildThumbnailPath = (width) => 'tmp-' + width;
