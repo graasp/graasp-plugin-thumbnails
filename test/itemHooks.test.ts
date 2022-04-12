@@ -19,9 +19,13 @@ import {
 } from '../src/utils/constants';
 import { FileTaskManager } from 'graasp-plugin-file';
 import { mockSetTaskPostHookHandler } from './mock';
+import { createReadStream } from 'fs';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
+
+const filepath = path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH);
+const fileStream = createReadStream(filepath);
 
 const buildAppOptions = (options) => ({
   itemTaskManager,
@@ -100,41 +104,36 @@ describe('Item hooks', () => {
     beforeEach(() => {
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async () => fileStream);
     });
     it('Creating image should call post hook', (done) => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
-      readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)).then(
-        (fileBuffer) => {
-          const createMock = jest
-            .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
-            .mockImplementation(() => new MockTask(true));
-          jest
-            .spyOn(FileTaskManager.prototype, 'createGetFileBufferTask')
-            .mockImplementation(() => new MockTask(fileBuffer));
+      readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)).then(() => {
+        const createMock = jest
+          .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
+          .mockImplementation(() => new MockTask(true));
 
-          mockSetTaskPostHookHandler(runner, async (name, fn) => {
-            if (name === itemTaskManager.getCreateTaskName()) {
-              const item = {
-                id: v4(),
-                type: ITEM_TYPES.LOCAL,
-                extra: {
-                  [ITEM_TYPES.LOCAL]: {
-                    mimetype: THUMBNAIL_MIMETYPE,
-                    path: `${ITEM_S3_KEY}/filepath`,
-                  },
+        mockSetTaskPostHookHandler(runner, async (name, fn) => {
+          if (name === itemTaskManager.getCreateTaskName()) {
+            const item = {
+              id: v4(),
+              type: ITEM_TYPES.LOCAL,
+              extra: {
+                [ITEM_TYPES.LOCAL]: {
+                  mimetype: THUMBNAIL_MIMETYPE,
+                  path: `${ITEM_S3_KEY}/filepath`,
                 },
-              };
-              const actor = GRAASP_ACTOR;
-              await fn(item, actor, { log: undefined });
-              expect(createMock).toHaveBeenCalledTimes(4);
-              done();
-            }
-          });
+              },
+            };
+            const actor = GRAASP_ACTOR;
+            await fn(item, actor, { log: undefined });
+            expect(createMock).toHaveBeenCalledTimes(4);
+            done();
+          }
+        });
 
-          build(buildAppOptions(buildLocalOptions()));
-        },
-      );
+        build(buildAppOptions(buildLocalOptions()));
+      });
     });
     it.each(FILE_SERVICES)(
       '%s : Run post hook only for file items',

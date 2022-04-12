@@ -1,5 +1,5 @@
 import FormData from 'form-data';
-import { createReadStream } from 'fs';
+import fs, { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import plugin from '../src/index';
 import path from 'path';
@@ -16,9 +16,15 @@ import {
 } from './constants';
 import { mockCreateUploadFileTask } from './mock';
 import { THUMBNAIL_SIZES } from '../src/utils/constants';
+import { UploadFileNotImageError } from '../src/utils/errors';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
+
+const filepath = path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH);
+const fileStream = createReadStream(filepath);
+const textPath = path.resolve(__dirname, FIXTURE_TXT_PATH);
+const textFileStream = createReadStream(textPath);
 
 const buildAppOptions = (options) => ({
   plugin,
@@ -94,78 +100,70 @@ describe('Thumbnail Plugin Tests', () => {
     );
   });
 
-  describe('POST /upload?id=<id>', () => {
+  describe.each(FILE_SERVICES)('POST /upload?id=<id> for %s', (service) => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
       jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
     });
 
-    it.each(FILE_SERVICES)(
-      '%s :Successfully upload thumbnail',
-      async (service) => {
-        const uploadMock = mockCreateUploadFileTask(true);
+    const form = new FormData();
+    form.append('file', fileStream);
 
-        jest
-          .spyOn(TaskRunner.prototype, 'runMultipleSequences')
-          .mockImplementation(async (sequences) => {
-            return sequences;
-          });
+    const form1 = new FormData();
+    form1.append('file', textFileStream);
 
-        const app = await build(
-          buildAppOptions(buildFileServiceOptions(service)),
-        );
+    jest.spyOn(fs, 'createReadStream').mockImplementation(() => fileStream);
 
-        const form = new FormData();
-        form.append(
-          'file',
-          createReadStream(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)),
-        );
+    it('%s :Successfully upload thumbnail', async () => {
+      const uploadMock = mockCreateUploadFileTask(true);
 
-        const response = await app.inject({
-          method: 'POST',
-          url: `/upload?id=${GET_ITEM_ID}`,
-          payload: form,
-          headers: form.getHeaders(),
+      jest
+        .spyOn(TaskRunner.prototype, 'runMultipleSequences')
+        .mockImplementation(async (sequences) => {
+          return sequences;
         });
 
-        // upload all thumbnail sizes + original image
-        expect(uploadMock).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length + 1);
-        expect(response.statusCode).toBe(StatusCodes.OK);
-      },
-    );
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
 
-    it.each(FILE_SERVICES)(
-      '%s : Throw if try to upload a non-image file',
-      async (service) => {
-        const uploadMock = mockCreateUploadFileTask(true);
+      const response = await app.inject({
+        method: 'POST',
+        url: `/upload?id=${GET_ITEM_ID}`,
+        payload: form,
+        headers: form.getHeaders(),
+      });
 
-        jest
-          .spyOn(TaskRunner.prototype, 'runMultipleSequences')
-          .mockImplementation(async (sequences) => {
-            return sequences;
-          });
+      // upload all thumbnail sizes + original image
+      expect(uploadMock).toHaveBeenCalledTimes(THUMBNAIL_SIZES.length + 1);
+      expect(response.statusCode).toBe(StatusCodes.OK);
+    });
 
-        const app = await build(
-          buildAppOptions(buildFileServiceOptions(service)),
-        );
+    it('%s : Throw if try to upload a non-image file', async () => {
+      const uploadMock = mockCreateUploadFileTask(true);
 
-        const form = new FormData();
-        form.append(
-          'file',
-          createReadStream(path.resolve(__dirname, FIXTURE_TXT_PATH)),
-        );
-
-        const res = await app.inject({
-          method: 'POST',
-          url: '/upload',
-          payload: form,
-          headers: form.getHeaders(),
+      jest
+        .spyOn(TaskRunner.prototype, 'runMultipleSequences')
+        .mockImplementation(async (sequences) => {
+          return sequences;
         });
 
-        expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
-        expect(uploadMock).not.toBeCalled();
-      },
-    );
+      const app = await build(
+        buildAppOptions(buildFileServiceOptions(service)),
+      );
+
+      const res = await app.inject({
+        method: 'POST',
+        url: `/upload?id=${GET_ITEM_ID}`,
+
+        payload: form1,
+        headers: form1.getHeaders(),
+      });
+
+      expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(await res.json()).toEqual(new UploadFileNotImageError());
+      expect(uploadMock).not.toBeCalled();
+    });
   });
 });

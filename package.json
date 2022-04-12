@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit && eslint \"{src,test}/**/*.{js,ts}\"  --fix",
     "prettier:check": "prettier --check \"{src,test}/**/*.ts\"",
     "prettier:write": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "jest --forceExit --coverage --verbose",
+    "test": "jest  --forceExit --coverage --verbose",
     "test:watch": "yarn test --watchAll",
     "pre-commit": "yarn prettier:check && yarn lint",
     "hooks:uninstall": "husky uninstall",
