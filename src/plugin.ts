@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { Item } from 'graasp';
-import { mkdirSync, ReadStream, rmSync } from 'fs';
+import { mkdirSync, ReadStream, rmSync, existsSync } from 'fs';
 import path from 'path';
 import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
@@ -107,15 +107,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
       return [...thumbnailGenerationTasks, ...tasksFromOptions];
     },
-    uploadOnResponse: async (request) => {
-      try {
-        // delete tmp files after endpoint responded
-        const itemId = (request?.query as { id: string })?.id as string;
-        const fileStorage = path.join(__dirname, TMP_FOLDER, itemId);
+    uploadOnResponse: async ({ query, log }) => {
+      const itemId = (query as { id: string })?.id as string;
+      const fileStorage = path.join(__dirname, TMP_FOLDER, itemId);
+      // delete tmp files after endpoint responded
+      if (existsSync(fileStorage)) {
         rmSync(fileStorage, { recursive: true });
-      } catch (e) {
+      } else {
         // do not throw if folder has already been deleted
-        console.error(e);
+        log?.error(`${fileStorage} was not found, and was not deleted`);
       }
     },
     downloadPreHookTasks: options.downloadPreHookTasks,
