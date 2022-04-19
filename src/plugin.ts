@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
-import { Actor, Item, UnknownExtra } from 'graasp';
-import sharp from 'sharp';
+import { Item } from 'graasp';
+import { mkdirSync, ReadStream, rmSync, existsSync } from 'fs';
+import path from 'path';
 import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
 import {
@@ -15,10 +16,10 @@ import {
   THUMBNAIL_PATH_PREFIX,
   ITEM_TYPES,
   THUMBNAIL_MIMETYPE,
+  TMP_FOLDER,
 } from './utils/constants';
-import { buildFilePathWithPrefix } from './utils/helpers';
+import { buildFilePathWithPrefix, createThumbnails } from './utils/helpers';
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
-import path from 'path';
 import { UploadFileNotImageError } from './utils/errors';
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
@@ -62,27 +63,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   const buildFilePath = (itemId: string, filename: string) =>
     buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
-  const createThumbnails = async (item: Item<UnknownExtra>, actor: Actor) => {
-    // get original image
-    const filename = getFilePathFromItemExtra(
-      serviceMethod,
-      item.extra as FileItemExtra,
-    );
-    const task = fileTaskManager.createGetFileBufferTask(actor, { filename });
-    const originalImage = await runner.runSingle(task);
-
-    // generate sizes for given image
-    const files = THUMBNAIL_SIZES.map(({ name, width }) => ({
-      size: name,
-      image: sharp(originalImage).resize({ width }).toFormat(THUMBNAIL_FORMAT),
-    }));
-
-    return files;
-  };
-
   fastify.register(basePlugin, {
     serviceMethod, // S3 or local
-    buildFilePath: buildFilePath,
+    buildFilePath,
     serviceOptions,
 
     // use function as pre/post hook to avoid infinite loop with thumbnails
@@ -98,26 +81,42 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     uploadPostHookTasks: async (data, auth) => {
       const { file, itemId } = data;
       const { member } = auth;
-      const thumbnails = THUMBNAIL_SIZES.map(({ name, width }) => ({
-        size: name,
-        image: sharp(file).resize({ width }).toFormat(THUMBNAIL_FORMAT),
-      }));
 
       // it might not be saved correctly in the original upload
-      const thumbnailGenerationTasks = await Promise.all(
-        thumbnails.map(async ({ size: filename, image }) =>
+
+      const fileStorage = path.join(__dirname, TMP_FOLDER, itemId);
+      mkdirSync(fileStorage, { recursive: true });
+      // Warning: assume stream is defined with a filepath
+      const thumbnails = await createThumbnails(
+        file.path as string,
+        itemId,
+        fileStorage,
+      );
+      const thumbnailGenerationTasks = thumbnails.map(
+        ({ name, size, fileStream }) =>
           fileTaskManager.createUploadFileTask(member, {
-            file: await image.toBuffer(),
-            filepath: buildFilePath(itemId, filename),
+            file: fileStream,
+            filepath: buildFilePath(itemId, name),
             mimetype: THUMBNAIL_MIMETYPE,
+            size,
           }),
-        ),
       );
 
       const tasksFromOptions =
         (await options?.uploadPostHookTasks?.(data, auth)) ?? [];
 
       return [...thumbnailGenerationTasks, ...tasksFromOptions];
+    },
+    uploadOnResponse: async ({ query, log }) => {
+      const itemId = (query as { id: string })?.id as string;
+      const fileStorage = path.join(__dirname, TMP_FOLDER, itemId);
+      // delete tmp files after endpoint responded
+      if (existsSync(fileStorage)) {
+        rmSync(fileStorage, { recursive: true });
+      } else {
+        // do not throw if folder has already been deleted
+        log?.error(`${fileStorage} was not found, and was not deleted`);
+      }
     },
     downloadPreHookTasks: options.downloadPreHookTasks,
     downloadPostHookTasks: options.downloadPostHookTasks,
@@ -186,20 +185,41 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
           try {
-            const thumbnails = await createThumbnails(item, actor);
+            // get original image
+            const filepath = getFilePathFromItemExtra(
+              serviceMethod,
+              item.extra as FileItemExtra,
+            );
+            const task = fileTaskManager.createDownloadFileTask(actor, {
+              filepath,
+              itemId: item.id,
+              fileStorage: TMP_FOLDER,
+            });
 
-            // create thumbnails for new image
-            const tasks = await Promise.all(
-              thumbnails.map(async ({ size: filename, image }) => {
-                return fileTaskManager.createUploadFileTask(actor, {
-                  file: await image.toBuffer(),
-                  filepath: buildFilePath(id, filename),
-                  mimetype: THUMBNAIL_FORMAT,
-                });
-              }),
+            //  todo: refactor to use only one runner or use serverless lambda
+            const imageStream = (await runner.runSingle(task)) as ReadStream;
+
+            const fileStorage = path.join(__dirname, TMP_FOLDER, id);
+            mkdirSync(fileStorage, { recursive: true });
+            // Warning: assume stream is defined with a filepath
+            const thumbnails = await createThumbnails(
+              imageStream.path as string,
+              item.id,
+              fileStorage,
             );
 
-            await runner.runMultiple(tasks, log);
+            // create thumbnails for new image
+            const tasks = thumbnails.map(({ name, size, fileStream }) => {
+              return fileTaskManager.createUploadFileTask(actor, {
+                file: fileStream,
+                filepath: buildFilePath(id, name),
+                mimetype: THUMBNAIL_FORMAT,
+                size,
+              });
+            });
+
+            // avoid conccurency in this case: the original task might already run in parallel
+            await runner.runSingleSequence(tasks, log);
           } catch (err) {
             log.error(err);
           }

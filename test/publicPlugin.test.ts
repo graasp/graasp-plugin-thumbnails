@@ -1,5 +1,5 @@
 import FormData from 'form-data';
-import { createReadStream } from 'fs';
+import fs, { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import plugin from '../src/publicPlugin';
 import path from 'path';
@@ -34,6 +34,9 @@ const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
 const publicItemTaskManager = {} as unknown as PublicItemTaskManager;
 const memberTaskManager = {} as unknown as MemberTaskManager;
+
+const filepath = path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH);
+const fileStream = createReadStream(filepath);
 
 const buildAppOptions = (options) => ({
   plugin,
@@ -74,22 +77,22 @@ describe('Public Thumbnail Plugin Tests', () => {
   });
 
   describe('Public Items', () => {
-    describe('GET /:id/download?size=<size>', () => {
-      beforeEach(() => {
-        jest.clearAllMocks();
-        jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
-        jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
+    describe.each(FILE_SERVICES)(
+      'GET /:id/download?size=<size> for %s',
+      (service) => {
+        beforeEach(() => {
+          jest.clearAllMocks();
+          jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
+          jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
 
-        jest
-          .spyOn(TaskRunner.prototype, 'runSingleSequence')
-          .mockImplementation(async (tasks) => {
-            return tasks[0]?.getResult();
-          });
-      });
+          jest
+            .spyOn(TaskRunner.prototype, 'runSingleSequence')
+            .mockImplementation(async (tasks) => {
+              return tasks[0]?.getResult();
+            });
+        });
 
-      it.each(FILE_SERVICES)(
-        '%s :Successfully download all different sizes',
-        async (service) => {
+        it('Successfully download all different sizes', async () => {
           const mockGetPublicTask = jest
             .fn()
             .mockReturnValue(new MockTask(ITEM_FILE));
@@ -108,12 +111,9 @@ describe('Public Thumbnail Plugin Tests', () => {
             // return value is defined in mock runner
             expect(res.body).toBeTruthy();
           }
-        },
-      );
+        });
 
-      it.each(FILE_SERVICES)(
-        '%s : Throw if item is not public',
-        async (service) => {
+        it('Throw if item is not public', async () => {
           const error = new Error();
           const mockGetPublicTask = jest
             .fn()
@@ -132,18 +132,23 @@ describe('Public Thumbnail Plugin Tests', () => {
             // error code depends on mocked error
             expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
           }
-        },
-      );
-    });
+        });
+      },
+    );
 
-    describe('POST /upload?id=<id>', () => {
+    describe.each(FILE_SERVICES)('POST /upload?id=<id> for %s', (service) => {
       beforeEach(() => {
         jest.clearAllMocks();
         jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
         jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
       });
 
-      it.each(FILE_SERVICES)('%s :Throw on upload', async (service) => {
+      const form = new FormData();
+      form.append('file', fileStream);
+
+      jest.spyOn(fs, 'createReadStream').mockImplementation(() => fileStream);
+
+      it('%s :Throw on upload', async () => {
         const uploadMock = mockCreateUploadFileTask(true);
 
         jest
@@ -154,12 +159,6 @@ describe('Public Thumbnail Plugin Tests', () => {
 
         const app = await build(
           buildAppOptions(buildPublicFileServiceOptions(service)),
-        );
-
-        const form = new FormData();
-        form.append(
-          'file',
-          createReadStream(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)),
         );
 
         const response = await app.inject({
@@ -219,14 +218,19 @@ describe('Public Thumbnail Plugin Tests', () => {
       );
     });
 
-    describe('POST /upload?id=<id>', () => {
+    describe.each(FILE_SERVICES)('POST /upload?id=<id>', (service) => {
       beforeEach(() => {
         jest.clearAllMocks();
         jest.spyOn(runner, 'setTaskPostHookHandler').mockReturnValue();
         jest.spyOn(runner, 'setTaskPreHookHandler').mockReturnValue();
       });
 
-      it.each(FILE_SERVICES)('%s :Throw on upload', async (service) => {
+      const form = new FormData();
+      form.append('file', fileStream);
+
+      jest.spyOn(fs, 'createReadStream').mockImplementation(() => fileStream);
+
+      it('%s :Throw on upload', async () => {
         const uploadMock = mockCreateUploadFileTask(true);
 
         jest
@@ -237,12 +241,6 @@ describe('Public Thumbnail Plugin Tests', () => {
 
         const app = await build(
           buildAppOptions(buildPublicFileServiceOptions(service)),
-        );
-
-        const form = new FormData();
-        form.append(
-          'file',
-          createReadStream(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)),
         );
 
         const response = await app.inject({

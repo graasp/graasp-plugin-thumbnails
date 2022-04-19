@@ -46,6 +46,7 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
     downloadPreHookTasks: async ({ itemId: id, filename }) => {
       const task = pTM.createGetPublicItemTask(graaspActor, { itemId: id });
       task.getResult = () => {
+        if (task.result instanceof Error) return task.result;
         return {
           filepath: buildFilePathWithPrefix({
             itemId: (task.result as Item).id,
@@ -72,14 +73,17 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
     },
     downloadPreHookTasks: async ({ itemId: id, filename }) => {
       const task = mTM.createGetTask(graaspActor, id);
-      task.getResult = () => ({
-        filepath: buildFilePathWithPrefix({
-          itemId: (task.result as Member).id,
-          pathPrefix: avatarsPrefix,
-          filename,
-        }),
-        mimetype: THUMBNAIL_MIMETYPE,
-      });
+      task.getResult = () => {
+        if (task.result instanceof Error) return task.result;
+        return {
+          filepath: buildFilePathWithPrefix({
+            itemId: (task.result as Member).id,
+            pathPrefix: avatarsPrefix,
+            filename,
+          }),
+          mimetype: THUMBNAIL_MIMETYPE,
+        };
+      };
       return [task];
     },
     prefix: `${MEMBERS_ROUTE}${AVATARS_ROUTE}`,
