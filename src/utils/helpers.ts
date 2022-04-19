@@ -6,7 +6,6 @@ import {
   THUMBNAIL_FORMAT,
   THUMBNAIL_PATH_PREFIX,
   THUMBNAIL_SIZES,
-  TMP_FOLDER,
 } from './constants';
 import { UndefinedItemError } from './errors';
 
