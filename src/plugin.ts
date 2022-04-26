@@ -185,6 +185,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
           try {
+
+            // create tmp folder
+            const fileStorage = path.join(__dirname, TMP_FOLDER, id);
+            mkdirSync(fileStorage, { recursive: true });
+
             // get original image
             const filepath = getFilePathFromItemExtra(
               serviceMethod,
@@ -193,14 +198,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             const task = fileTaskManager.createDownloadFileTask(actor, {
               filepath,
               itemId: item.id,
-              fileStorage: TMP_FOLDER,
+              fileStorage,
             });
 
             //  todo: refactor to use only one runner or use serverless lambda
             const imageStream = (await runner.runSingle(task)) as ReadStream;
 
-            const fileStorage = path.join(__dirname, TMP_FOLDER, id);
-            mkdirSync(fileStorage, { recursive: true });
             // Warning: assume stream is defined with a filepath
             const thumbnails = await createThumbnails(
               imageStream.path as string,
