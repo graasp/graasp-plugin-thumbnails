@@ -1,12 +1,12 @@
-import { DatabaseTransactionHandler, UnknownExtra } from 'graasp';
+import { DatabaseTransactionHandler, UnknownExtra } from '@graasp/sdk';
 import {
+  DownloadPostHookTasksFunction,
   DownloadPreHookTasksFunction,
-  ServiceMethod,
-  UploadPreHookTasksFunction,
   GraaspLocalFileItemOptions,
   GraaspS3FileItemOptions,
-  DownloadPostHookTasksFunction,
+  ServiceMethod,
   UploadPostHookTasksFunction,
+  UploadPreHookTasksFunction,
 } from 'graasp-plugin-file';
 
 declare module 'fastify' {

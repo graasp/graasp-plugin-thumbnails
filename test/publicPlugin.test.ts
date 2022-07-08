@@ -1,21 +1,17 @@
 import FormData from 'form-data';
 import fs, { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import plugin from '../src/publicPlugin';
 import path from 'path';
-import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
-import build from './app';
+
+import { MemberTaskManager } from '@graasp/sdk';
 import {
-  buildPublicFileServiceOptions,
-  buildPublicLocalOptions,
-  buildPublicS3Options,
-  FILE_SERVICES,
-  FIXTURE_THUMBNAIL_PATH,
-  GET_ITEM_ID,
-  GRAASP_ACTOR,
-  ITEM_FILE,
-} from './constants';
-import { mockCreateUploadFileTask } from './mock';
+  CannotEditPublicItem,
+  CannotEditPublicMember,
+  PublicItemTaskManager,
+} from 'graasp-plugin-public';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+
+import plugin from '../src/publicPlugin';
 import {
   AVATARS_ROUTE,
   ITEMS_ROUTE,
@@ -23,12 +19,18 @@ import {
   THUMBNAIL_ROUTE,
   THUMBNAIL_SIZES,
 } from '../src/utils/constants';
+import build from './app';
 import {
-  CannotEditPublicItem,
-  CannotEditPublicMember,
-  PublicItemTaskManager,
-} from 'graasp-plugin-public';
-import { MemberTaskManager } from 'graasp';
+  FILE_SERVICES,
+  FIXTURE_THUMBNAIL_PATH,
+  GET_ITEM_ID,
+  GRAASP_ACTOR,
+  ITEM_FILE,
+  buildPublicFileServiceOptions,
+  buildPublicLocalOptions,
+  buildPublicS3Options,
+} from './constants';
+import { mockCreateUploadFileTask } from './mock';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();

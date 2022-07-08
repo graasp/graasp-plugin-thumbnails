@@ -1,15 +1,17 @@
 import { v4 } from 'uuid';
-import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
-import build from './app';
+
+import { FileTaskManager } from 'graasp-plugin-file';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+
 import plugin from '../src/plugin';
+import { ItemType } from '@graasp/sdk';
+import build from './app';
 import {
-  buildLocalOptions,
   FILE_SERVICES,
   GRAASP_ACTOR,
   ITEM_S3_KEY,
+  buildLocalOptions,
 } from './constants';
-import { ITEM_TYPES } from '../src/utils/constants';
-import { FileTaskManager } from 'graasp-plugin-file';
 import { mockSetTaskPostHookHandler } from './mock';
 
 const itemTaskManager = new ItemTaskManager();
@@ -60,9 +62,9 @@ describe('App hooks', () => {
           if (name === itemTaskManager.getCreateTaskName()) {
             const item = {
               id: v4(),
-              type: ITEM_TYPES.APP,
+              type: ItemType.APP,
               extra: {
-                [ITEM_TYPES.APP]: { url: appUrl },
+                [ItemType.APP]: { url: appUrl },
               },
             };
             const actor = GRAASP_ACTOR;
@@ -84,7 +86,7 @@ describe('App hooks', () => {
         if (name === itemTaskManager.getCreateTaskName()) {
           const item = {
             id: v4(),
-            type: ITEM_TYPES.LOCAL,
+            type: ItemType.LOCAL_FILE,
             extra: {
               file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
             },
@@ -112,9 +114,9 @@ describe('App hooks', () => {
             if (name === itemTaskManager.getCreateTaskName()) {
               const item = {
                 id: v4(),
-                type: ITEM_TYPES.APP,
+                type: ItemType.APP,
                 extra: {
-                  [ITEM_TYPES.APP]: { url: appUrl },
+                  [ItemType.APP]: { url: appUrl },
                 },
               };
               const actor = GRAASP_ACTOR;

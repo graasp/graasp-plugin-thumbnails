@@ -1,29 +1,9 @@
-import { FAILURE_MESSAGES } from '@graasp/translations';
-import { GraaspErrorDetails, GraaspError } from 'graasp';
 import { StatusCodes } from 'http-status-codes';
 
-export class GraaspBaseError implements GraaspError {
-  name: string;
-  code: string;
-  message: string;
-  statusCode?: number;
-  data?: unknown;
-  origin: 'plugin' | string;
+import { BaseGraaspError } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
-  constructor(
-    { code, statusCode, message }: GraaspErrorDetails,
-    data?: unknown,
-  ) {
-    this.name = code;
-    this.code = code;
-    this.message = message;
-    this.statusCode = statusCode;
-    this.data = data;
-    this.origin = 'plugin';
-  }
-}
-
-export class UploadFileNotImageError extends GraaspBaseError {
+export class UploadFileNotImageError extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {
@@ -36,7 +16,7 @@ export class UploadFileNotImageError extends GraaspBaseError {
   }
 }
 
-export class UndefinedItemError extends GraaspBaseError {
+export class UndefinedItemError extends BaseGraaspError {
   constructor(data?: unknown) {
     super(
       {

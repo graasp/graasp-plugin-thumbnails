@@ -1,6 +1,8 @@
-import { ServiceMethod } from 'graasp-plugin-file';
-import { Actor, Item } from 'graasp';
 import { v4 } from 'uuid';
+
+import { Actor, Item } from '@graasp/sdk';
+import { ServiceMethod } from 'graasp-plugin-file';
+
 export const ROOT_PATH = './test/files';
 
 export const GET_ITEM_ID = v4();

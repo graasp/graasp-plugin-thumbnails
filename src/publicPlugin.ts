@@ -1,19 +1,20 @@
-/* eslint-disable semi */
-import { Item, Member } from 'graasp';
-import { buildFilePathWithPrefix, THUMBNAIL_MIMETYPE } from '.';
-import thumbnailsPlugin from './plugin';
+import { FastifyPluginAsync } from 'fastify';
+
+import { Item, Member } from '@graasp/sdk';
 import {
   CannotEditPublicItem,
   CannotEditPublicMember,
 } from 'graasp-plugin-public';
-import { FastifyPluginAsync } from 'fastify';
+
+import { THUMBNAIL_MIMETYPE, buildFilePathWithPrefix } from '.';
+import thumbnailsPlugin from './plugin';
+import { GraaspPublicThumbnailsOptions } from './types';
 import {
   AVATARS_ROUTE,
   ITEMS_ROUTE,
   MEMBERS_ROUTE,
   THUMBNAIL_ROUTE,
 } from './utils/constants';
-import { GraaspPublicThumbnailsOptions } from './types';
 
 const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
   fastify,
