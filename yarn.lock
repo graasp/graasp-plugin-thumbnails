@@ -3258,7 +3258,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:3.29.1, fastify@npm:^3.25.3":
+"fastify@npm:^3.25.3":
   version: 3.29.1
   resolution: "fastify@npm:3.29.1"
   dependencies:
@@ -3735,7 +3735,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.18.0
     "@typescript-eslint/parser": ^5.18.0
     eslint: ^8.12.0
-    fastify: 3.29.1
+    fastify: ^3.25.3
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
