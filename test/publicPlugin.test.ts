@@ -192,7 +192,7 @@ describe('Public Thumbnail Plugin Tests', () => {
         jest
           .spyOn(TaskRunner.prototype, 'runSingleSequence')
           .mockImplementation(async (tasks) => {
-            return tasks[0]?.getResult();
+            return tasks[0]?.getResult?.();
           });
       });
 

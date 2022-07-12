@@ -1,7 +1,6 @@
 import { v4 } from 'uuid';
 
-import { Actor, Item } from '@graasp/sdk';
-import { ServiceMethod } from 'graasp-plugin-file';
+import { Actor, FileItemType, Item, ItemType } from '@graasp/sdk';
 
 export const ROOT_PATH = './test/files';
 
@@ -12,7 +11,7 @@ export const ITEM_S3_KEY =
 export const ITEM_FILE: Partial<Item> = {
   id: GET_ITEM_ID,
   name: 'item-file',
-  type: 'file',
+  type: ItemType.LOCAL_FILE,
   extra: {
     s3File: {},
   },
@@ -31,9 +30,9 @@ export const DEFAULT_S3_OPTIONS = {
 };
 
 export const buildLocalOptions = ({ pathPrefix = '/prefix/' } = {}) => ({
-  serviceMethod: ServiceMethod.LOCAL,
+  fileItemType: ItemType.LOCAL_FILE,
   pathPrefix,
-  serviceOptions: {
+  fileConfigurations: {
     local: {
       storageRootPath: '/storageRootPath',
     },
@@ -41,20 +40,20 @@ export const buildLocalOptions = ({ pathPrefix = '/prefix/' } = {}) => ({
 });
 
 export const buildS3Options = ({ pathPrefix = '/prefix/' } = {}) => ({
-  serviceMethod: ServiceMethod.S3,
+  fileItemType: ItemType.S3_FILE,
   pathPrefix,
-  serviceOptions: {
+  fileConfigurations: {
     s3: DEFAULT_S3_OPTIONS,
   },
 });
 
 export const buildPublicLocalOptions = () => ({
-  serviceMethod: ServiceMethod.LOCAL,
+  fileItemType: ItemType.LOCAL_FILE,
   prefixes: {
     avatarsPrefix: 'avatars',
     thumbnailsPrefix: 'thumbnails',
   },
-  serviceOptions: {
+  fileConfigurations: {
     local: {
       storageRootPath: '/storageRootPath',
     },
@@ -62,35 +61,38 @@ export const buildPublicLocalOptions = () => ({
 });
 
 export const buildPublicS3Options = () => ({
-  serviceMethod: ServiceMethod.S3,
+  fileItemType: ItemType.S3_FILE,
   prefixes: {
     avatarsPrefix: 'avatars',
     thumbnailsPrefix: 'thumbnails',
   },
-  serviceOptions: {
+  fileConfigurations: {
     s3: DEFAULT_S3_OPTIONS,
   },
 });
 
-export const buildFileServiceOptions = (service: ServiceMethod) => {
-  if (service === ServiceMethod.LOCAL) {
+export const buildFileServiceOptions = (itemType: ItemType) => {
+  if (itemType === ItemType.LOCAL_FILE) {
     return buildLocalOptions();
-  } else if (service === ServiceMethod.S3) {
+  } else if (itemType === ItemType.S3_FILE) {
     return buildS3Options();
   }
   throw new Error('Service is not defined');
 };
 
-export const buildPublicFileServiceOptions = (service: ServiceMethod) => {
-  if (service === ServiceMethod.LOCAL) {
+export const buildPublicFileServiceOptions = (itemType: ItemType) => {
+  if (itemType === ItemType.LOCAL_FILE) {
     return buildPublicLocalOptions();
-  } else if (service === ServiceMethod.S3) {
+  } else if (itemType === ItemType.S3_FILE) {
     return buildPublicS3Options();
   }
   throw new Error('Service is not defined');
 };
 
-export const FILE_SERVICES = [ServiceMethod.LOCAL, ServiceMethod.S3];
+export const FILE_SERVICES: FileItemType[] = [
+  ItemType.LOCAL_FILE,
+  ItemType.S3_FILE,
+];
 
 export const FIXTURE_THUMBNAIL_PATH = './files/image.jpeg';
 export const FIXTURE_TXT_PATH = './files/1.txt';

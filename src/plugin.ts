@@ -3,13 +3,14 @@ import path from 'path';
 
 import { FastifyPluginAsync } from 'fastify';
 
-import { Item, ItemType } from '@graasp/sdk';
-import basePlugin, {
-  FileTaskManager, ServiceMethod,
+import {
   FileItemExtra,
+  Item,
+  ItemType,
   LocalFileItemExtra,
   S3FileItemExtra,
-} from 'graasp-plugin-file';
+} from '@graasp/sdk';
+import basePlugin, { FileTaskManager } from 'graasp-plugin-file';
 import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
 
 import { AppItemExtra, GraaspThumbnailsOptions } from './types';
@@ -28,8 +29,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   options,
 ) => {
   const {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     pathPrefix,
     enableItemsHooks,
     enableAppsHooks,
@@ -46,12 +47,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     throw new Error('graasp-plugin-thumbnails: downloadPreHookTasks missing');
   }
 
-  if (serviceMethod === ServiceMethod.S3) {
+  if (fileItemType === ItemType.S3_FILE) {
     if (
-      !serviceOptions?.s3?.s3Region ||
-      !serviceOptions?.s3?.s3Bucket ||
-      !serviceOptions?.s3?.s3AccessKeyId ||
-      !serviceOptions?.s3?.s3SecretAccessKey
+      !fileConfigurations?.s3?.s3Region ||
+      !fileConfigurations?.s3?.s3Bucket ||
+      !fileConfigurations?.s3?.s3AccessKeyId ||
+      !fileConfigurations?.s3?.s3SecretAccessKey
     ) {
       throw new Error(
         'graasp-plugin-thumbnails: mandatory options for s3 service missing',
@@ -59,15 +60,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     }
   }
 
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
+  const fileTaskManager = new FileTaskManager(fileConfigurations, fileItemType);
 
   const buildFilePath = (itemId: string, filename: string) =>
     buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
   fastify.register(basePlugin, {
-    serviceMethod, // S3 or local
+    fileItemType, // S3 or local
     buildFilePath,
-    serviceOptions,
+    fileConfigurations,
 
     // use function as pre/post hook to avoid infinite loop with thumbnails
     uploadPreHookTasks: (data, auth) => {
@@ -181,9 +182,13 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         // generate automatically thumbnails for s3file and file images
         if (
           (type === ItemType.S3_FILE &&
-            (extra as unknown as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
+            (extra as unknown as S3FileItemExtra)?.s3File?.mimetype.startsWith(
+              'image',
+            )) ||
           (type === ItemType.LOCAL_FILE &&
-            (extra as unknown as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
+            (extra as unknown as LocalFileItemExtra)?.file?.mimetype.startsWith(
+              'image',
+            ))
         ) {
           try {
             // create tmp folder
@@ -192,7 +197,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
             // get original image
             const filepath = getFilePathFromItemExtra(
-              serviceMethod,
+              fileItemType,
               item.extra as unknown as FileItemExtra,
             );
             const task = fileTaskManager.createDownloadFileTask(actor, {

@@ -21,8 +21,8 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
   options,
 ) => {
   const {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     prefixes: { avatarsPrefix, thumbnailsPrefix },
   } = options;
 
@@ -36,8 +36,8 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
 
   // items' thumbnails
   fastify.register(thumbnailsPlugin, {
-    serviceMethod: serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
 
     pathPrefix: thumbnailsPrefix,
 
@@ -65,8 +65,8 @@ const plugin: FastifyPluginAsync<GraaspPublicThumbnailsOptions> = async (
 
   // members' avatars
   fastify.register(thumbnailsPlugin, {
-    serviceMethod: serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     pathPrefix: avatarsPrefix,
 
     uploadPreHookTasks: async (payload) => {

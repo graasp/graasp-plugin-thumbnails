@@ -21,3 +21,4 @@ export const MEMBERS_ROUTE = '/members';
 export const ITEMS_ROUTE = '/items';
 
 export const TMP_FOLDER = './tmp';
+export const PLUGIN_NAME = 'graasp-plugin-thumbnails';

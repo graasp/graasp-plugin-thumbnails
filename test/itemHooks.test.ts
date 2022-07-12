@@ -3,15 +3,12 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 import { v4 } from 'uuid';
 
+import { ItemType } from '@graasp/sdk';
 import { FileTaskManager } from 'graasp-plugin-file';
 import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
-import { ItemType } from '@graasp/sdk'
 
 import plugin from '../src/plugin';
-import {
-  THUMBNAIL_MIMETYPE,
-  THUMBNAIL_SIZES,
-} from '../src/utils/constants';
+import { THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';
 import build from './app';
 import {
   FILE_SERVICES,
@@ -52,7 +49,7 @@ describe('Item hooks', () => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async (task) => task.getResult?.());
     });
     afterEach(() => {
       app?.close();
@@ -82,7 +79,7 @@ describe('Item hooks', () => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async (task) => task.getResult?.());
     });
     it('Delete corresponding file on delete task', (done) => {
       const deleteMock = jest

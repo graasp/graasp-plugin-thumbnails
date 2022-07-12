@@ -1,10 +1,13 @@
-import { DatabaseTransactionHandler, UnknownExtra } from '@graasp/sdk';
+import {
+  DatabaseTransactionHandler,
+  FileItemType,
+  LocalFileConfiguration,
+  S3FileConfiguration,
+  UnknownExtra,
+} from '@graasp/sdk';
 import {
   DownloadPostHookTasksFunction,
   DownloadPreHookTasksFunction,
-  GraaspLocalFileItemOptions,
-  GraaspS3FileItemOptions,
-  ServiceMethod,
   UploadPostHookTasksFunction,
   UploadPreHookTasksFunction,
 } from 'graasp-plugin-file';
@@ -21,7 +24,7 @@ declare module 'fastify' {
 }
 
 export interface GraaspThumbnailsOptions {
-  serviceMethod: ServiceMethod;
+  fileItemType: FileItemType;
 
   pathPrefix: string;
 
@@ -36,18 +39,18 @@ export interface GraaspThumbnailsOptions {
     itemsRoot: string;
   };
 
-  serviceOptions: {
-    s3: GraaspS3FileItemOptions;
-    local: GraaspLocalFileItemOptions;
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
   };
 }
 
 export type GraaspPublicThumbnailsOptions = {
-  serviceMethod;
+  fileItemType: FileItemType;
   prefixes: { avatarsPrefix: string; thumbnailsPrefix: string };
-  serviceOptions: {
-    s3: GraaspS3FileItemOptions;
-    local: GraaspLocalFileItemOptions;
+  fileConfigurations: {
+    s3: S3FileConfiguration;
+    local: LocalFileConfiguration;
   };
 };
 
