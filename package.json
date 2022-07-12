@@ -28,7 +28,8 @@
   "homepage": "https://github.com/graasp/graasp-plugin-thumbnails#readme",
   "dependencies": {
     "@graasp/translations": "github:graasp/graasp-translations",
-    "graasp-plugin-file": "github:graasp/graasp-plugin-file",
+    "fastify": "^3.29.1",
+    "graasp-plugin-file": "github:graasp/graasp-plugin-file#29/sdk",
     "graasp-plugin-file-item": "github:graasp/graasp-plugin-file-item",
     "graasp-plugin-public": "github:graasp/graasp-plugin-public",
     "sharp": "0.30.3"
@@ -36,16 +37,16 @@
   "devDependencies": {
     "@commitlint/cli": "16.2.3",
     "@commitlint/config-conventional": "16.2.1",
+    "@graasp/sdk": "github:graasp/graasp-utils#15/testUtils",
+    "@trivago/prettier-plugin-sort-imports": "3.2.0",
     "@types/eslint": "^8.4.1",
-    "@types/graasp": "github:graasp/graasp-types",
     "@types/jest": "27.4.1",
     "@types/node": "17.0.23",
     "@types/sharp": "0.30.1",
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
     "eslint": "^8.12.0",
-    "fastify": "3.28.0",
-    "graasp-test": "github:graasp/graasp-test",
+    "graasp-test": "github:graasp/graasp-test#23/sdk",
     "http-status-codes": "2.2.0",
     "husky": "7.0.4",
     "jest": "27.5.1",
@@ -54,5 +55,5 @@
     "typescript": "4.6.3",
     "uuid": "8.3.2"
   },
-  "packageManager": "yarn@3.2.0-rc.3"
+  "packageManager": "yarn@3.2.1"
 }

@@ -1,6 +1,6 @@
-import { Item } from 'graasp';
+import { Item } from '@graasp/sdk';
 import { FileTaskManager } from 'graasp-plugin-file';
-import { ItemMembershipTaskManager, TaskRunner, Task } from 'graasp-test';
+import { ItemMembershipTaskManager, Task, TaskRunner } from 'graasp-test';
 
 export const mockCreateGetOfItemTaskSequence = (
   data: Partial<Item> | Error,
