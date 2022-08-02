@@ -1,29 +1,13 @@
-import { FAILURE_MESSAGES } from '@graasp/translations';
-import { GraaspErrorDetails, GraaspError } from 'graasp';
 import { StatusCodes } from 'http-status-codes';
 
-export class GraaspBaseError implements GraaspError {
-  name: string;
-  code: string;
-  message: string;
-  statusCode?: number;
-  data?: unknown;
-  origin: 'plugin' | string;
+import { ErrorFactory } from '@graasp/sdk';
+import { FAILURE_MESSAGES } from '@graasp/translations';
 
-  constructor(
-    { code, statusCode, message }: GraaspErrorDetails,
-    data?: unknown,
-  ) {
-    this.name = code;
-    this.code = code;
-    this.message = message;
-    this.statusCode = statusCode;
-    this.data = data;
-    this.origin = 'plugin';
-  }
-}
+import { PLUGIN_NAME } from './constants';
 
-export class UploadFileNotImageError extends GraaspBaseError {
+const ThumbnailError = ErrorFactory(PLUGIN_NAME);
+
+export class UploadFileNotImageError extends ThumbnailError {
   constructor(data?: unknown) {
     super(
       {
@@ -36,7 +20,7 @@ export class UploadFileNotImageError extends GraaspBaseError {
   }
 }
 
-export class UndefinedItemError extends GraaspBaseError {
+export class UndefinedItemError extends ThumbnailError {
   constructor(data?: unknown) {
     super(
       {

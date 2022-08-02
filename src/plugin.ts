@@ -1,34 +1,36 @@
-import { FastifyPluginAsync } from 'fastify';
-import { Item } from 'graasp';
-import { mkdirSync, ReadStream, rmSync, existsSync } from 'fs';
+import { ReadStream, existsSync, mkdirSync, rmSync } from 'fs';
 import path from 'path';
-import basePlugin, { FileTaskManager, ServiceMethod } from 'graasp-plugin-file';
-import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
-import {
-  S3FileItemExtra,
-  LocalFileItemExtra,
-  FileItemExtra,
-} from 'graasp-plugin-file';
+
+import { FastifyPluginAsync } from 'fastify';
 
 import {
-  THUMBNAIL_SIZES,
+  FileItemExtra,
+  Item,
+  ItemType,
+  LocalFileItemExtra,
+  S3FileItemExtra,
+} from '@graasp/sdk';
+import basePlugin, { FileTaskManager } from 'graasp-plugin-file';
+import { getFilePathFromItemExtra } from 'graasp-plugin-file-item';
+
+import { AppItemExtra, GraaspThumbnailsOptions } from './types';
+import {
   THUMBNAIL_FORMAT,
-  THUMBNAIL_PATH_PREFIX,
-  ITEM_TYPES,
   THUMBNAIL_MIMETYPE,
+  THUMBNAIL_PATH_PREFIX,
+  THUMBNAIL_SIZES,
   TMP_FOLDER,
 } from './utils/constants';
-import { buildFilePathWithPrefix, createThumbnails } from './utils/helpers';
-import { AppItemExtra, GraaspThumbnailsOptions } from './types';
 import { UploadFileNotImageError } from './utils/errors';
+import { buildFilePathWithPrefix, createThumbnails } from './utils/helpers';
 
 const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
   fastify,
   options,
 ) => {
   const {
-    serviceMethod,
-    serviceOptions,
+    fileItemType,
+    fileConfigurations,
     pathPrefix,
     enableItemsHooks,
     enableAppsHooks,
@@ -45,12 +47,12 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     throw new Error('graasp-plugin-thumbnails: downloadPreHookTasks missing');
   }
 
-  if (serviceMethod === ServiceMethod.S3) {
+  if (fileItemType === ItemType.S3_FILE) {
     if (
-      !serviceOptions?.s3?.s3Region ||
-      !serviceOptions?.s3?.s3Bucket ||
-      !serviceOptions?.s3?.s3AccessKeyId ||
-      !serviceOptions?.s3?.s3SecretAccessKey
+      !fileConfigurations?.s3?.s3Region ||
+      !fileConfigurations?.s3?.s3Bucket ||
+      !fileConfigurations?.s3?.s3AccessKeyId ||
+      !fileConfigurations?.s3?.s3SecretAccessKey
     ) {
       throw new Error(
         'graasp-plugin-thumbnails: mandatory options for s3 service missing',
@@ -58,15 +60,15 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     }
   }
 
-  const fileTaskManager = new FileTaskManager(serviceOptions, serviceMethod);
+  const fileTaskManager = new FileTaskManager(fileConfigurations, fileItemType);
 
   const buildFilePath = (itemId: string, filename: string) =>
     buildFilePathWithPrefix({ itemId, pathPrefix, filename });
 
   fastify.register(basePlugin, {
-    serviceMethod, // S3 or local
+    fileItemType, // S3 or local
     buildFilePath,
-    serviceOptions,
+    fileConfigurations,
 
     // use function as pre/post hook to avoid infinite loop with thumbnails
     uploadPreHookTasks: (data, auth) => {
@@ -179,20 +181,19 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
 
         // generate automatically thumbnails for s3file and file images
         if (
-          (type === ITEM_TYPES.S3 &&
+          (type === ItemType.S3_FILE &&
             (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
-          (type === ITEM_TYPES.LOCAL &&
+          (type === ItemType.LOCAL_FILE &&
             (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
           try {
-
             // create tmp folder
             const fileStorage = path.join(__dirname, TMP_FOLDER, id);
             mkdirSync(fileStorage, { recursive: true });
 
             // get original image
             const filepath = getFilePathFromItemExtra(
-              serviceMethod,
+              fileItemType,
               item.extra as FileItemExtra,
             );
             const task = fileTaskManager.createDownloadFileTask(actor, {
@@ -244,7 +245,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         const { id, type, extra = {} } = item;
 
         // generate automatically thumbnails for apps
-        if (type === ITEM_TYPES.APP) {
+        if (type === ItemType.APP) {
           const appId = (
             await appService.getAppIdByUrl(
               (extra as AppItemExtra).app.url,

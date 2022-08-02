@@ -1,17 +1,22 @@
 import { v4 } from 'uuid';
-import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
-import build from './app';
+
+import { FastifyLoggerInstance } from 'fastify';
+
+import { ItemType } from '@graasp/sdk';
+import { FileTaskManager } from 'graasp-plugin-file';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+
 import plugin from '../src/plugin';
+import build from './app';
 import {
-  buildLocalOptions,
   FILE_SERVICES,
   GRAASP_ACTOR,
   ITEM_S3_KEY,
+  buildLocalOptions,
 } from './constants';
-import { ITEM_TYPES } from '../src/utils/constants';
-import { FileTaskManager } from 'graasp-plugin-file';
 import { mockSetTaskPostHookHandler } from './mock';
 
+const MOCK_LOGGER = {} as unknown as FastifyLoggerInstance;
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
 
@@ -42,7 +47,7 @@ describe('App hooks', () => {
     beforeEach(() => {
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async (task) => task.getResult?.());
     });
     it('Creating app should call post hook', (done) => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
@@ -60,13 +65,13 @@ describe('App hooks', () => {
           if (name === itemTaskManager.getCreateTaskName()) {
             const item = {
               id: v4(),
-              type: ITEM_TYPES.APP,
+              type: ItemType.APP,
               extra: {
-                [ITEM_TYPES.APP]: { url: appUrl },
+                [ItemType.APP]: { url: appUrl },
               },
             };
             const actor = GRAASP_ACTOR;
-            await fn(item, actor, { log: undefined });
+            await fn(item, actor, { log: MOCK_LOGGER });
             expect(copyMock).toHaveBeenCalledTimes(4);
             done();
           }
@@ -84,7 +89,7 @@ describe('App hooks', () => {
         if (name === itemTaskManager.getCreateTaskName()) {
           const item = {
             id: v4(),
-            type: ITEM_TYPES.LOCAL,
+            type: ItemType.LOCAL_FILE,
             extra: {
               file: { mimetype: 'txt', path: `${ITEM_S3_KEY}/filepath` },
             },
@@ -112,13 +117,13 @@ describe('App hooks', () => {
             if (name === itemTaskManager.getCreateTaskName()) {
               const item = {
                 id: v4(),
-                type: ITEM_TYPES.APP,
+                type: ItemType.APP,
                 extra: {
-                  [ITEM_TYPES.APP]: { url: appUrl },
+                  [ItemType.APP]: { url: appUrl },
                 },
               };
               const actor = GRAASP_ACTOR;
-              await fn(item, actor, { log: undefined });
+              await fn(item, actor, { log: MOCK_LOGGER });
               expect(copyMock).toHaveBeenCalledTimes(0);
             }
           });

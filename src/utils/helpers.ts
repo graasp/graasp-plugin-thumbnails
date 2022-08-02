@@ -1,7 +1,8 @@
 import { createHash } from 'crypto';
-import sharp from 'sharp';
 import fs, { ReadStream } from 'fs';
 import path from 'path';
+import sharp from 'sharp';
+
 import {
   THUMBNAIL_FORMAT,
   THUMBNAIL_PATH_PREFIX,

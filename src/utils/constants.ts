@@ -15,15 +15,10 @@ export const THUMBNAIL_PATH_PREFIX = 'thumbnails';
 
 export const THUMBNAIL_MIMETYPE = 'image/jpeg';
 
-export const ITEM_TYPES = {
-  APP: 'app',
-  S3: 's3File',
-  LOCAL: 'file',
-};
-
 export const AVATARS_ROUTE = '/avatars';
 export const THUMBNAIL_ROUTE = '/thumbnails';
 export const MEMBERS_ROUTE = '/members';
 export const ITEMS_ROUTE = '/items';
 
 export const TMP_FOLDER = './tmp';
+export const PLUGIN_NAME = 'graasp-plugin-thumbnails';

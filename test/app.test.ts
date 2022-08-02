@@ -1,22 +1,24 @@
 import FormData from 'form-data';
 import fs, { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import plugin from '../src/index';
 import path from 'path';
-import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
+
+import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+
+import plugin from '../src/index';
+import { THUMBNAIL_SIZES } from '../src/utils/constants';
+import { UploadFileNotImageError } from '../src/utils/errors';
 import build from './app';
 import {
-  buildFileServiceOptions,
-  buildLocalOptions,
-  buildS3Options,
   FILE_SERVICES,
   FIXTURE_THUMBNAIL_PATH,
   FIXTURE_TXT_PATH,
   GET_ITEM_ID,
+  buildFileServiceOptions,
+  buildLocalOptions,
+  buildS3Options,
 } from './constants';
 import { mockCreateUploadFileTask } from './mock';
-import { THUMBNAIL_SIZES } from '../src/utils/constants';
-import { UploadFileNotImageError } from '../src/utils/errors';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();

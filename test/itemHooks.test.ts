@@ -1,25 +1,24 @@
-import { v4 } from 'uuid';
-import { TaskRunner, ItemTaskManager, Task as MockTask } from 'graasp-test';
-import path from 'path';
-import plugin from '../src/plugin';
+import { createReadStream } from 'fs';
 import { readFile } from 'fs/promises';
+import path from 'path';
+import { v4 } from 'uuid';
+
+import { ItemType } from '@graasp/sdk';
+import { FileTaskManager } from 'graasp-plugin-file';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+
+import plugin from '../src/plugin';
+import { THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';
 import build from './app';
 import {
-  buildFileServiceOptions,
-  buildLocalOptions,
   FILE_SERVICES,
   FIXTURE_THUMBNAIL_PATH,
   GRAASP_ACTOR,
   ITEM_S3_KEY,
+  buildFileServiceOptions,
+  buildLocalOptions,
 } from './constants';
-import {
-  ITEM_TYPES,
-  THUMBNAIL_MIMETYPE,
-  THUMBNAIL_SIZES,
-} from '../src/utils/constants';
-import { FileTaskManager } from 'graasp-plugin-file';
 import { mockSetTaskPostHookHandler } from './mock';
-import { createReadStream } from 'fs';
 
 const itemTaskManager = new ItemTaskManager();
 const runner = new TaskRunner();
@@ -50,7 +49,7 @@ describe('Item hooks', () => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async (task) => task.getResult?.());
     });
     afterEach(() => {
       app?.close();
@@ -80,7 +79,7 @@ describe('Item hooks', () => {
       jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
       jest
         .spyOn(runner, 'runSingle')
-        .mockImplementation(async (task) => task.getResult());
+        .mockImplementation(async (task) => task.getResult?.());
     });
     it('Delete corresponding file on delete task', (done) => {
       const deleteMock = jest
@@ -117,9 +116,9 @@ describe('Item hooks', () => {
           if (name === itemTaskManager.getCreateTaskName()) {
             const item = {
               id: v4(),
-              type: ITEM_TYPES.LOCAL,
+              type: ItemType.LOCAL_FILE,
               extra: {
-                [ITEM_TYPES.LOCAL]: {
+                [ItemType.LOCAL_FILE]: {
                   mimetype: THUMBNAIL_MIMETYPE,
                   path: `${ITEM_S3_KEY}/filepath`,
                 },
@@ -146,9 +145,9 @@ describe('Item hooks', () => {
           if (name === itemTaskManager.getCreateTaskName()) {
             const item = {
               id: v4(),
-              type: ITEM_TYPES.APP,
+              type: ItemType.APP,
               extra: {
-                [ITEM_TYPES.LOCAL]: {
+                [ItemType.LOCAL_FILE]: {
                   mimetype: THUMBNAIL_MIMETYPE,
                   path: `${ITEM_S3_KEY}/filepath`,
                 },
@@ -174,9 +173,9 @@ describe('Item hooks', () => {
           if (name === itemTaskManager.getCreateTaskName()) {
             const item = {
               id: v4(),
-              type: ITEM_TYPES.APP,
+              type: ItemType.APP,
               extra: {
-                [ITEM_TYPES.LOCAL]: {
+                [ItemType.LOCAL_FILE]: {
                   mimetype: 'txt',
                   path: `${ITEM_S3_KEY}/filepath`,
                 },
