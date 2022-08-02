@@ -1,12 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { BaseGraaspError } from '@graasp/sdk';
+import { ErrorFactory } from '@graasp/sdk';
 import { FAILURE_MESSAGES } from '@graasp/translations';
 
 import { PLUGIN_NAME } from './constants';
 
-export class UploadFileNotImageError extends BaseGraaspError {
-  origin = PLUGIN_NAME;
+const ThumbnailError = ErrorFactory(PLUGIN_NAME);
+
+export class UploadFileNotImageError extends ThumbnailError {
   constructor(data?: unknown) {
     super(
       {
@@ -19,8 +20,7 @@ export class UploadFileNotImageError extends BaseGraaspError {
   }
 }
 
-export class UndefinedItemError extends BaseGraaspError {
-  origin = PLUGIN_NAME;
+export class UndefinedItemError extends ThumbnailError {
   constructor(data?: unknown) {
     super(
       {

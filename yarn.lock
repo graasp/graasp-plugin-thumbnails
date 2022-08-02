@@ -967,9 +967,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-utils#15/testUtils":
+"@graasp/sdk@github:graasp/graasp-sdk":
   version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-utils.git#commit=9309ba72a8f647a1e113d800fb0a76a9cf3942b0"
+  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=7e3491095507f6dfd129d318a87e6c63f0eb486e"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
@@ -979,7 +979,7 @@ __metadata:
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 4b33c50735d8a7d6aab71905ecd8b38a5f29df8269b66e661357b3197130ee3a7e9ba1e3a011306dcfc40d84c6b3ef3912af2a20e3d5bd172ca6204b52bf8ca2
+  checksum: 1fdf3b5c52945769005bb6a83620a09f8995f5d16b2115675a7cf745b2a02e07758b3ed1a77b9357b0a9d6ab984e5427a18e4a5353e04f4d02ce16c2010e9785
   languageName: node
   linkType: hard
 
@@ -1854,13 +1854,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-regex@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "ansi-regex@npm:2.1.1"
-  checksum: 190abd03e4ff86794f338a31795d262c1dfe8c91f7e01d04f13f646f1dcb16c5800818f886047876f1272f065570ab86b24b99089f8b68a0e11ff19aed4ca8f1
-  languageName: node
-  linkType: hard
-
 "ansi-regex@npm:^5.0.1":
   version: 5.0.1
   resolution: "ansi-regex@npm:5.0.1"
@@ -1903,13 +1896,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aproba@npm:^1.0.3":
-  version: 1.2.0
-  resolution: "aproba@npm:1.2.0"
-  checksum: 0fca141966559d195072ed047658b6e6c4fe92428c385dd38e288eacfc55807e7b4989322f030faff32c0f46bb0bc10f1e0ac32ec22d25315a1e5bbc0ebb76dc
-  languageName: node
-  linkType: hard
-
 "aproba@npm:^1.0.3 || ^2.0.0":
   version: 2.0.0
   resolution: "aproba@npm:2.0.0"
@@ -1931,16 +1917,6 @@ __metadata:
     delegates: ^1.0.0
     readable-stream: ^3.6.0
   checksum: 348edfdd931b0b50868b55402c01c3f64df1d4c229ab6f063539a5025fd6c5f5bb8a0cab409bbed8d75d34762d22aa91b7c20b4204eb8177063158d9ba792981
-  languageName: node
-  linkType: hard
-
-"are-we-there-yet@npm:~1.1.2":
-  version: 1.1.7
-  resolution: "are-we-there-yet@npm:1.1.7"
-  dependencies:
-    delegates: ^1.0.0
-    readable-stream: ^2.0.6
-  checksum: 70d251719c969b2745bfe5ddf3ebaefa846a636e90a6d5212573676af5d6670e15457761d4725731e19cbebdce42c4ab0cbedf23ab047f2a08274985aa10a3c7
   languageName: node
   linkType: hard
 
@@ -2425,13 +2401,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"code-point-at@npm:^1.0.0":
-  version: 1.1.0
-  resolution: "code-point-at@npm:1.1.0"
-  checksum: 17d5666611f9b16d64fdf48176d9b7fb1c7d1c1607a189f7e600040a11a6616982876af148230336adb7d8fe728a559f743a4e29db3747e3b1a32fa7f4529681
-  languageName: node
-  linkType: hard
-
 "collect-v8-coverage@npm:^1.0.0":
   version: 1.0.1
   resolution: "collect-v8-coverage@npm:1.0.1"
@@ -2490,13 +2459,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color@npm:^4.2.1":
-  version: 4.2.1
-  resolution: "color@npm:4.2.1"
+"color@npm:^4.2.3":
+  version: 4.2.3
+  resolution: "color@npm:4.2.3"
   dependencies:
     color-convert: ^2.0.1
     color-string: ^1.9.0
-  checksum: 03fb3100a8ba457b45f3f9828f64e982d683f48c841e3d26a619bd88924fcc47f1124b2fdf3e4ae518c4129e9885c19052244ba1ea0b06d86beffc5f5e551d62
+  checksum: 0579629c02c631b426780038da929cca8e8d80a40158b09811a0112a107c62e10e4aad719843b791b1e658ab4e800558f2e87ca4522c8b32349d497ecb6adeb4
   languageName: node
   linkType: hard
 
@@ -2538,7 +2507,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"console-control-strings@npm:^1.0.0, console-control-strings@npm:^1.1.0, console-control-strings@npm:~1.1.0":
+"console-control-strings@npm:^1.1.0":
   version: 1.1.0
   resolution: "console-control-strings@npm:1.1.0"
   checksum: 8755d76787f94e6cf79ce4666f0c5519906d7f5b02d4b884cf41e11dcd759ed69c57da0670afd9236d229a46e0f9cf519db0cd829c6dca820bb5a5c3def584ed
@@ -2611,13 +2580,6 @@ __metadata:
   version: 0.4.2
   resolution: "cookie@npm:0.4.2"
   checksum: a00833c998bedf8e787b4c342defe5fa419abd96b32f4464f718b91022586b8f1bafbddd499288e75c037642493c83083da426c6a9080d309e3bd90fd11baa9b
-  languageName: node
-  linkType: hard
-
-"core-util-is@npm:~1.0.0":
-  version: 1.0.3
-  resolution: "core-util-is@npm:1.0.3"
-  checksum: 9de8597363a8e9b9952491ebe18167e3b36e7707569eed0ebf14f8bba773611376466ae34575bca8cfe3c767890c859c74056084738f09d4e4a6f902b2ad7d99
   languageName: node
   linkType: hard
 
@@ -3273,16 +3235,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify-cors@npm:^6.0.2":
-  version: 6.0.3
-  resolution: "fastify-cors@npm:6.0.3"
-  dependencies:
-    fastify-plugin: ^3.0.0
-    vary: ^1.1.2
-  checksum: 054cf4e1cf0b20778ac24d9995a99f44e9b026ca9a028db0cbb6093922bcc931dff5f5bb185d19e881014392bb5886a8b5f9da6af3d3ab5e62b7a68f4eca33c4
-  languageName: node
-  linkType: hard
-
 "fastify-plugin@npm:^3.0.0, fastify-plugin@npm:^3.0.1":
   version: 3.0.1
   resolution: "fastify-plugin@npm:3.0.1"
@@ -3526,22 +3478,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gauge@npm:~2.7.3":
-  version: 2.7.4
-  resolution: "gauge@npm:2.7.4"
-  dependencies:
-    aproba: ^1.0.3
-    console-control-strings: ^1.0.0
-    has-unicode: ^2.0.0
-    object-assign: ^4.1.0
-    signal-exit: ^3.0.0
-    string-width: ^1.0.1
-    strip-ansi: ^3.0.1
-    wide-align: ^1.1.0
-  checksum: a89b53cee65579b46832e050b5f3a79a832cc422c190de79c6b8e2e15296ab92faddde6ddf2d376875cbba2b043efa99b9e1ed8124e7365f61b04e3cee9d40ee
-  languageName: node
-  linkType: hard
-
 "gensync@npm:^1.0.0-beta.2":
   version: 1.0.0-beta.2
   resolution: "gensync@npm:1.0.0-beta.2"
@@ -3715,18 +3651,18 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=5c596932cf54a5dac78b36e547055336adad445b"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=f311ad8ad3b8e2ad85e1e402fad669d0d5bd06a6"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: 8a872c9fe9682c7bb56c5d2cd1ea265ca9df67398bc77c519dc23a2fa4c007d485c73d4c6ff9b98c1eae0ab34a25afe6949e4c6ccf279526ec8ea6878b776f2c
+  checksum: 40ecc01d3aee658f2bc1647d69170b6515efbf9efab961a1cb09d7ae0111f5580784d58d934400e3f3ad76601b93f3a1ec6842d8287034ee7a577e8869e30464
   languageName: node
   linkType: hard
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=1f787df683b1476bd1192c67e423d78cc5413279"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=0381d1b3e271dd185d1708584a9e5e4683446920"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -3735,34 +3671,18 @@ __metadata:
     fs-extra: 10.1.0
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
-  checksum: efe059375aacf5182c70a618940007ec6896fe63f1a1ee8e1707662681b67f24c867ef7dad05f7bcc6e62d39ed98e17411605646571d50f0848c422e29abb09b
-  languageName: node
-  linkType: hard
-
-"graasp-plugin-file@github:graasp/graasp-plugin-file#29/sdk":
-  version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=70127e79d62ba7e6499ac12d4f68176bf1c9671c"
-  dependencies:
-    "@fastify/multipart": 6.0.0
-    "@graasp/translations": "github:graasp/graasp-translations"
-    aws-sdk: 2.1111.0
-    content-disposition: 0.5.4
-    fs-extra: 10.1.0
-    http-status-codes: 2.2.0
-    node-fetch: 2.6.7
-  checksum: 6ffbfcd95b9dc77a7563383f08350a8d46b9bec053fad2963cb27a75abc9e377f48a6b6092cca328ab1ae1c484da75353ad843cc96f222d1a11e63a654b290a8
+  checksum: 64922d616a9f8aa6d67727ef9c12bd6d804d5ac86972c575031535194068895a279b72e6db8b19c4e597a3207d602c8437cd81a2eed016ec812aff38f9c53778
   languageName: node
   linkType: hard
 
 "graasp-plugin-public@github:graasp/graasp-plugin-public":
   version: 0.1.0
-  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=690102927a2c7cf78335a0cab633fa2fac9131a3"
+  resolution: "graasp-plugin-public@https://github.com/graasp/graasp-plugin-public.git#commit=8e2a57354bd1f143d3b525023b3746ebb7c3f6db"
   dependencies:
-    fastify-cors: ^6.0.2
     graasp-item-tags: "github:graasp/graasp-item-tags"
-    http-status-codes: ^2.2.0
-    qs: ^6.10.2
-  checksum: 5393af38efe2d0f89709310797a4a20e4aa002e289bef01ebb2f03e845d2c5dcb7d4181d9eeb6ff2c42079cb8ea8b48c8101425dfad05664c47f0fae18b40d95
+    http-status-codes: 2.2.0
+    qs: 6.11.0
+  checksum: 9b40df7b6ff4b15431c9ef1af8bb1e183b9145a7bb32e23e82b71ef5bd1b0c26455f4c21a129e2777f04556d244a66290399d152bd0037ee64750175e452b54b
   languageName: node
   linkType: hard
 
@@ -3772,7 +3692,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
-    "@graasp/sdk": "github:graasp/graasp-utils#15/testUtils"
+    "@graasp/sdk": "github:graasp/graasp-sdk"
     "@graasp/translations": "github:graasp/graasp-translations"
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/eslint": ^8.4.1
@@ -3783,25 +3703,27 @@ __metadata:
     "@typescript-eslint/parser": ^5.18.0
     eslint: ^8.12.0
     fastify: ^3.29.1
-    graasp-plugin-file: "github:graasp/graasp-plugin-file#29/sdk"
+    graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-    graasp-test: "github:graasp/graasp-test#23/sdk"
+    graasp-test: "github:graasp/graasp-test"
     http-status-codes: 2.2.0
     husky: 7.0.4
     jest: 27.5.1
     prettier: 2.6.2
-    sharp: 0.30.3
+    sharp: 0.30.7
     ts-jest: 27.1.4
     typescript: 4.6.3
     uuid: 8.3.2
   languageName: unknown
   linkType: soft
 
-"graasp-test@github:graasp/graasp-test#23/sdk":
+"graasp-test@github:graasp/graasp-test":
   version: 0.1.0
-  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=d4b11bc106a03fb023241d2ea029b84d5064562f"
-  checksum: 744ed18562e7cabe70e41ee11f03e56d65befd6ad447478533dbc5abee253b0dce2bfa0c5de46a90fbb9a9c6e93ae859b7a27825543e389b4b058c35c6cbb9bd
+  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=3ff1f7951d1c2439f84fab546bf8de60b530bd1c"
+  dependencies:
+    uuid: 8.3.2
+  checksum: aaa3759fe2842de03fdc99011623dced835636fe5e15598c8574b9d526c040615dac3bf06fd351007a07d267493f9cd4e70c14ef35b0b73fb2810f90be4bbae8
   languageName: node
   linkType: hard
 
@@ -3840,7 +3762,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"has-unicode@npm:^2.0.0, has-unicode@npm:^2.0.1":
+"has-unicode@npm:^2.0.1":
   version: 2.0.1
   resolution: "has-unicode@npm:2.0.1"
   checksum: 1eab07a7436512db0be40a710b29b5dc21fa04880b7f63c9980b706683127e3c1b57cb80ea96d47991bdae2dfe479604f6a1ba410106ee1046a41d1bd0814400
@@ -3924,7 +3846,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-status-codes@npm:2.2.0, http-status-codes@npm:^2.2.0":
+"http-status-codes@npm:2.2.0":
   version: 2.2.0
   resolution: "http-status-codes@npm:2.2.0"
   checksum: 31e1d730856210445da0907d9b484629e69e4fe92ac032478a7aa4d89e5b215e2b4e75d7ebce40d0537b6850bd281b2f65c7cc36cc2677e5de056d6cea1045ce
@@ -4077,7 +3999,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inherits@npm:2, inherits@npm:^2.0.3, inherits@npm:^2.0.4, inherits@npm:~2.0.3":
+"inherits@npm:2, inherits@npm:^2.0.3, inherits@npm:^2.0.4":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 4a48a733847879d6cf6691860a6b1e3f0f4754176e4d71494c41f3475553768b10f84b5ce1d40fbd0e34e6bfbb864ee35858ad4dd2cf31e02fc4a154b724d7f1
@@ -4139,15 +4061,6 @@ __metadata:
   version: 2.1.1
   resolution: "is-extglob@npm:2.1.1"
   checksum: df033653d06d0eb567461e58a7a8c9f940bd8c22274b94bf7671ab36df5719791aae15eef6d83bbb5e23283967f2f984b8914559d4449efda578c775c4be6f85
-  languageName: node
-  linkType: hard
-
-"is-fullwidth-code-point@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "is-fullwidth-code-point@npm:1.0.0"
-  dependencies:
-    number-is-nan: ^1.0.0
-  checksum: 4d46a7465a66a8aebcc5340d3b63a56602133874af576a9ca42c6f0f4bd787a743605771c5f246db77da96605fefeffb65fc1dbe862dcc7328f4b4d03edf5a57
   languageName: node
   linkType: hard
 
@@ -4239,7 +4152,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isarray@npm:^1.0.0, isarray@npm:~1.0.0":
+"isarray@npm:^1.0.0":
   version: 1.0.0
   resolution: "isarray@npm:1.0.0"
   checksum: f032df8e02dce8ec565cf2eb605ea939bdccea528dbcf565cdf92bfa2da9110461159d86a537388ef1acef8815a330642d7885b29010e8f7eac967c9993b65ab
@@ -5389,12 +5302,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-addon-api@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "node-addon-api@npm:4.3.0"
+"node-addon-api@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "node-addon-api@npm:5.0.0"
   dependencies:
     node-gyp: latest
-  checksum: 3de396e23cc209f539c704583e8e99c148850226f6e389a641b92e8967953713228109f919765abc1f4355e801e8f41842f96210b8d61c7dcc10a477002dcf00
+  checksum: 7c5e2043ac37f6108784d94ed73a44ae6d3e68eb968de60680922fc6bc3d17fa69448c0feb4e0c9d3f4c74a0324822e566a8340a56916d9d6f23cb3e85620334
   languageName: node
   linkType: hard
 
@@ -5515,18 +5428,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npmlog@npm:^4.0.1":
-  version: 4.1.2
-  resolution: "npmlog@npm:4.1.2"
-  dependencies:
-    are-we-there-yet: ~1.1.2
-    console-control-strings: ~1.1.0
-    gauge: ~2.7.3
-    set-blocking: ~2.0.0
-  checksum: edbda9f95ec20957a892de1839afc6fb735054c3accf6fbefe767bac9a639fd5cea2baeac6bd2bcd50a85cb54924d57d9886c81c7fbc2332c2ddd19227504192
-  languageName: node
-  linkType: hard
-
 "npmlog@npm:^6.0.0":
   version: 6.0.1
   resolution: "npmlog@npm:6.0.1"
@@ -5539,24 +5440,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"number-is-nan@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "number-is-nan@npm:1.0.1"
-  checksum: 13656bc9aa771b96cef209ffca31c31a03b507ca6862ba7c3f638a283560620d723d52e626d57892c7fff475f4c36ac07f0600f14544692ff595abff214b9ffb
-  languageName: node
-  linkType: hard
-
 "nwsapi@npm:^2.2.0":
   version: 2.2.0
   resolution: "nwsapi@npm:2.2.0"
   checksum: 5ef4a9bc0c1a5b7f2e014aa6a4b359a257503b796618ed1ef0eb852098f77e772305bb0e92856e4bbfa3e6c75da48c0113505c76f144555ff38867229c2400a7
-  languageName: node
-  linkType: hard
-
-"object-assign@npm:^4.1.0":
-  version: 4.1.1
-  resolution: "object-assign@npm:4.1.1"
-  checksum: fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
   languageName: node
   linkType: hard
 
@@ -5958,9 +5845,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prebuild-install@npm:^7.0.1":
-  version: 7.0.1
-  resolution: "prebuild-install@npm:7.0.1"
+"prebuild-install@npm:^7.1.1":
+  version: 7.1.1
+  resolution: "prebuild-install@npm:7.1.1"
   dependencies:
     detect-libc: ^2.0.0
     expand-template: ^2.0.3
@@ -5969,7 +5856,6 @@ __metadata:
     mkdirp-classic: ^0.5.3
     napi-build-utils: ^1.0.1
     node-abi: ^3.3.0
-    npmlog: ^4.0.1
     pump: ^3.0.0
     rc: ^1.2.7
     simple-get: ^4.0.0
@@ -5977,7 +5863,7 @@ __metadata:
     tunnel-agent: ^0.6.0
   bin:
     prebuild-install: bin.js
-  checksum: 117c8966f221242633bbf245755fb469dabc7085909f5e3db83359d6281a88dedbdada7e839315805a192c74b7cce3ed1a86c1382a8d950c1ea60a9d5d8e7bf0
+  checksum: dbf96d0146b6b5827fc8f67f72074d2e19c69628b9a7a0a17d0fad1bf37e9f06922896972e074197fc00a52eae912993e6ef5a0d471652f561df5cb516f3f467
   languageName: node
   linkType: hard
 
@@ -6012,13 +5898,6 @@ __metadata:
     ansi-styles: ^5.0.0
     react-is: ^17.0.1
   checksum: cf610cffcb793885d16f184a62162f2dd0df31642d9a18edf4ca298e909a8fe80bdbf556d5c9573992c102ce8bf948691da91bf9739bee0ffb6e79c8a8a6e088
-  languageName: node
-  linkType: hard
-
-"process-nextick-args@npm:~2.0.0":
-  version: 2.0.1
-  resolution: "process-nextick-args@npm:2.0.1"
-  checksum: 1d38588e520dab7cea67cbbe2efdd86a10cc7a074c09657635e34f035277b59fbb57d09d8638346bf7090f8e8ebc070c96fa5fd183b777fff4f5edff5e9466cf
   languageName: node
   linkType: hard
 
@@ -6113,15 +5992,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.10.2":
-  version: 6.10.3
-  resolution: "qs@npm:6.10.3"
-  dependencies:
-    side-channel: ^1.0.4
-  checksum: 0fac5e6c7191d0295a96d0e83c851aeb015df7e990e4d3b093897d3ac6c94e555dbd0a599739c84d7fa46d7fee282d94ba76943983935cf33bba6769539b8019
-  languageName: node
-  linkType: hard
-
 "querystring@npm:0.2.0":
   version: 0.2.0
   resolution: "querystring@npm:0.2.0"
@@ -6202,21 +6072,6 @@ __metadata:
     string_decoder: ^1.1.1
     util-deprecate: ^1.0.1
   checksum: d4ea81502d3799439bb955a3a5d1d808592cf3133350ed352aeaa499647858b27b1c4013984900238b0873ec8d0d8defce72469fb7a83e61d53f5ad61cb80dc8
-  languageName: node
-  linkType: hard
-
-"readable-stream@npm:^2.0.6":
-  version: 2.3.7
-  resolution: "readable-stream@npm:2.3.7"
-  dependencies:
-    core-util-is: ~1.0.0
-    inherits: ~2.0.3
-    isarray: ~1.0.0
-    process-nextick-args: ~2.0.0
-    safe-buffer: ~5.1.1
-    string_decoder: ~1.1.1
-    util-deprecate: ~1.0.1
-  checksum: e4920cf7549a60f8aaf694d483a0e61b2a878b969d224f89b3bc788b8d920075132c4b55a7494ee944c7b6a9a0eada28a7f6220d80b0312ece70bbf08eeca755
   languageName: node
   linkType: hard
 
@@ -6406,7 +6261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:~5.1.0, safe-buffer@npm:~5.1.1":
+"safe-buffer@npm:~5.1.1":
   version: 5.1.2
   resolution: "safe-buffer@npm:5.1.2"
   checksum: f2f1f7943ca44a594893a852894055cf619c1fbcb611237fc39e461ae751187e7baf4dc391a72125e0ac4fb2d8c5c0b3c71529622e6a58f46b960211e704903c
@@ -6502,6 +6357,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:^7.3.7":
+  version: 7.3.7
+  resolution: "semver@npm:7.3.7"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 2fa3e877568cd6ce769c75c211beaed1f9fce80b28338cadd9d0b6c40f2e2862bafd62c19a6cff42f3d54292b7c623277bcab8816a2b5521cf15210d43e75232
+  languageName: node
+  linkType: hard
+
 "serialize-error@npm:^8.0.0":
   version: 8.1.0
   resolution: "serialize-error@npm:8.1.0"
@@ -6511,7 +6377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"set-blocking@npm:^2.0.0, set-blocking@npm:~2.0.0":
+"set-blocking@npm:^2.0.0":
   version: 2.0.0
   resolution: "set-blocking@npm:2.0.0"
   checksum: 6e65a05f7cf7ebdf8b7c75b101e18c0b7e3dff4940d480efed8aad3a36a4005140b660fa1d804cb8bce911cac290441dc728084a30504d3516ac2ff7ad607b02
@@ -6525,20 +6391,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp@npm:0.30.3":
-  version: 0.30.3
-  resolution: "sharp@npm:0.30.3"
+"sharp@npm:0.30.7":
+  version: 0.30.7
+  resolution: "sharp@npm:0.30.7"
   dependencies:
-    color: ^4.2.1
+    color: ^4.2.3
     detect-libc: ^2.0.1
-    node-addon-api: ^4.3.0
+    node-addon-api: ^5.0.0
     node-gyp: latest
-    prebuild-install: ^7.0.1
-    semver: ^7.3.5
+    prebuild-install: ^7.1.1
+    semver: ^7.3.7
     simple-get: ^4.0.1
     tar-fs: ^2.1.1
     tunnel-agent: ^0.6.0
-  checksum: 05738f0a74f55217ccbbe74ad7b8b579e2e24cbcebd021ae53cfb81d7a3e8ab42b02526249ad7d04900a4ea0da80fa63805b492edab3bfa0541888169c079057
+  checksum: bbc63ca3c7ea8a5bff32cd77022cfea30e25a03f5bd031e935924bf6cf0e11e3388e8b0e22b3137bf8816aa73407f1e4fbeb190f3a35605c27ffca9f32b91601
   languageName: node
   linkType: hard
 
@@ -6569,7 +6435,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"signal-exit@npm:^3.0.0, signal-exit@npm:^3.0.2, signal-exit@npm:^3.0.3, signal-exit@npm:^3.0.7":
+"signal-exit@npm:^3.0.2, signal-exit@npm:^3.0.3, signal-exit@npm:^3.0.7":
   version: 3.0.7
   resolution: "signal-exit@npm:3.0.7"
   checksum: a2f098f247adc367dffc27845853e9959b9e88b01cb301658cfe4194352d8d2bb32e18467c786a7fe15f1d44b233ea35633d076d5e737870b7139949d1ab6318
@@ -6856,17 +6722,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"string-width@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "string-width@npm:1.0.2"
-  dependencies:
-    code-point-at: ^1.0.0
-    is-fullwidth-code-point: ^1.0.0
-    strip-ansi: ^3.0.0
-  checksum: 5c79439e95bc3bd7233a332c5f5926ab2ee90b23816ed4faa380ce3b2576d7800b0a5bb15ae88ed28737acc7ea06a518c2eef39142dd727adad0e45c776cd37e
-  languageName: node
-  linkType: hard
-
 "string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.3":
   version: 4.2.3
   resolution: "string-width@npm:4.2.3"
@@ -6884,24 +6739,6 @@ __metadata:
   dependencies:
     safe-buffer: ~5.2.0
   checksum: 8417646695a66e73aefc4420eb3b84cc9ffd89572861fe004e6aeb13c7bc00e2f616247505d2dbbef24247c372f70268f594af7126f43548565c68c117bdeb56
-  languageName: node
-  linkType: hard
-
-"string_decoder@npm:~1.1.1":
-  version: 1.1.1
-  resolution: "string_decoder@npm:1.1.1"
-  dependencies:
-    safe-buffer: ~5.1.0
-  checksum: 9ab7e56f9d60a28f2be697419917c50cac19f3e8e6c28ef26ed5f4852289fe0de5d6997d29becf59028556f2c62983790c1d9ba1e2a3cc401768ca12d5183a5b
-  languageName: node
-  linkType: hard
-
-"strip-ansi@npm:^3.0.0, strip-ansi@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "strip-ansi@npm:3.0.1"
-  dependencies:
-    ansi-regex: ^2.0.0
-  checksum: 9b974de611ce5075c70629c00fa98c46144043db92ae17748fb780f706f7a789e9989fd10597b7c2053ae8d1513fd707816a91f1879b2f71e6ac0b6a863db465
   languageName: node
   linkType: hard
 
@@ -7468,7 +7305,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"util-deprecate@npm:^1.0.1, util-deprecate@npm:~1.0.1":
+"util-deprecate@npm:^1.0.1":
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 474acf1146cb2701fe3b074892217553dfcf9a031280919ba1b8d651a068c9b15d863b7303cb15bd00a862b498e6cf4ad7b4a08fb134edd5a6f7641681cb54a2
@@ -7532,13 +7369,6 @@ __metadata:
     spdx-correct: ^3.0.0
     spdx-expression-parse: ^3.0.0
   checksum: 35703ac889d419cf2aceef63daeadbe4e77227c39ab6287eeb6c1b36a746b364f50ba22e88591f5d017bc54685d8137bc2d328d0a896e4d3fd22093c0f32a9ad
-  languageName: node
-  linkType: hard
-
-"vary@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "vary@npm:1.1.2"
-  checksum: ae0123222c6df65b437669d63dfa8c36cee20a504101b2fcd97b8bf76f91259c17f9f2b4d70a1e3c6bbcee7f51b28392833adb6b2770b23b01abec84e369660b
   languageName: node
   linkType: hard
 
@@ -7656,7 +7486,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wide-align@npm:^1.1.0, wide-align@npm:^1.1.5":
+"wide-align@npm:^1.1.5":
   version: 1.1.5
   resolution: "wide-align@npm:1.1.5"
   dependencies:

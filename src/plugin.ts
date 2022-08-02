@@ -182,13 +182,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
         // generate automatically thumbnails for s3file and file images
         if (
           (type === ItemType.S3_FILE &&
-            (extra as unknown as S3FileItemExtra)?.s3File?.mimetype.startsWith(
-              'image',
-            )) ||
+            (extra as S3FileItemExtra)?.s3File?.mimetype.startsWith('image')) ||
           (type === ItemType.LOCAL_FILE &&
-            (extra as unknown as LocalFileItemExtra)?.file?.mimetype.startsWith(
-              'image',
-            ))
+            (extra as LocalFileItemExtra)?.file?.mimetype.startsWith('image'))
         ) {
           try {
             // create tmp folder
@@ -198,7 +194,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             // get original image
             const filepath = getFilePathFromItemExtra(
               fileItemType,
-              item.extra as unknown as FileItemExtra,
+              item.extra as FileItemExtra,
             );
             const task = fileTaskManager.createDownloadFileTask(actor, {
               filepath,
