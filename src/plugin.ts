@@ -128,7 +128,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const deleteFileTaskName = itemTaskManager.getDeleteTaskName();
     runner.setTaskPostHookHandler<Item>(
       deleteFileTaskName,
-      async ({ id }, actor, { log = defaultLogger }) => {
+      async ({ id }, actor, { log = defaultLogger, handler }) => {
         //  check item has thumbnails
         try {
           // await access(buildFilePath(id, undefined))
@@ -139,8 +139,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               filepath,
             });
           });
-          // no need to wait for thumbnails to be deleted
-          runner.runMultiple(tasks, log);
+          // No need to wait for thumbnail deletion
+          // DON'T use task runner for file task: this would generate a new transaction
+          // which is useless since the file task should not touch the DB at all
+          // TODO: replace when the file plugin has been refactored into a proper file service
+          tasks.forEach((t) => t.run(handler, log));
         } catch (err) {
           log.error(err);
         }
@@ -150,7 +153,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const copyItemTaskName = itemTaskManager.getCopyTaskName();
     runner.setTaskPostHookHandler<Item>(
       copyItemTaskName,
-      async (item, actor, { log = defaultLogger }, { original }) => {
+      async (item, actor, { log = defaultLogger, handler }, { original }) => {
         const { id } = item; // full copy with new `id`
         try {
           // copy thumbnails for copied item
@@ -165,8 +168,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               mimetype: THUMBNAIL_MIMETYPE,
             });
           });
-          // no need to wait
-          runner.runMultiple(tasks, log);
+          // No need to wait for thumbnail copy
+          // DON'T use task runner for file task: this would generate a new transaction
+          // which is useless since the file task should not touch the DB at all
+          // TODO: replace when the file plugin has been refactored into a proper file service
+          tasks.forEach((t) => t.run(handler, log));
         } catch (err) {
           log.error(err);
         }
@@ -176,7 +182,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const createTaskName = itemTaskManager.getCreateTaskName();
     runner.setTaskPostHookHandler<Item>(
       createTaskName,
-      async (item, actor, { log = defaultLogger }) => {
+      async (item, actor, { log = defaultLogger, handler }) => {
         const { id, type, extra = {} } = item;
 
         // generate automatically thumbnails for s3file and file images
@@ -202,8 +208,11 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               fileStorage,
             });
 
-            //  todo: refactor to use only one runner or use serverless lambda
-            const imageStream = (await runner.runSingle(task)) as ReadStream;
+            // DON'T use task runner for file task: this would generate a new transaction
+            // which is useless since the file task should not touch the DB at all
+            // TODO: replace when the file plugin has been refactored into a proper file service
+            await task.run(handler, log);
+            const imageStream = task.result as ReadStream;
 
             // Warning: assume stream is defined with a filepath
             const thumbnails = await createThumbnails(
@@ -241,7 +250,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
     const createTaskName = itemTaskManager.getCreateTaskName();
     runner.setTaskPostHookHandler<Item>(
       createTaskName,
-      async (item, actor, { log = defaultLogger }) => {
+      async (item, actor, { log = defaultLogger, handler }) => {
         const { id, type, extra = {} } = item;
 
         // generate automatically thumbnails for apps
@@ -249,7 +258,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           const appId = (
             await appService.getAppIdByUrl(
               (extra as AppItemExtra).app.url,
-              db.pool,
+              handler,
             )
           )?.id;
 
@@ -268,7 +277,10 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
               }),
             );
 
-            await runner.runMultiple(tasks, log);
+            // DON'T use task runner for file task: this would generate a new transaction
+            // which is useless since the file task should not touch the DB at all
+            // TODO: replace when the file plugin has been refactored into a proper file service
+            await Promise.all(tasks.map((t) => t.run(handler, log)));
           }
         }
       },

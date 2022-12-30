@@ -105,90 +105,86 @@ describe('Item hooks', () => {
         .spyOn(runner, 'runSingle')
         .mockImplementation(async () => fileStream);
     });
-    it('Creating image should call post hook', (done) => {
-      jest.spyOn(runner, 'runMultiple').mockImplementation(async () => []);
-      readFile(path.resolve(__dirname, FIXTURE_THUMBNAIL_PATH)).then(() => {
-        const createMock = jest
-          .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
-          .mockImplementation(() => new MockTask(true));
+    it('Creating image should call post hook', async () => {
+      const createMock = jest
+        .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
+        .mockImplementation(() => new MockTask(true));
 
-        mockSetTaskPostHookHandler(runner, async (name, fn) => {
-          if (name === itemTaskManager.getCreateTaskName()) {
-            const item = {
-              id: v4(),
-              type: ItemType.LOCAL_FILE,
-              extra: {
-                [ItemType.LOCAL_FILE]: {
-                  mimetype: THUMBNAIL_MIMETYPE,
-                  path: `${ITEM_S3_KEY}/filepath`,
-                },
+      mockSetTaskPostHookHandler(runner, async (name, fn) => {
+        if (name === itemTaskManager.getCreateTaskName()) {
+          const item = {
+            id: v4(),
+            type: ItemType.LOCAL_FILE,
+            extra: {
+              [ItemType.LOCAL_FILE]: {
+                mimetype: THUMBNAIL_MIMETYPE,
+                path: `${ITEM_S3_KEY}/filepath`,
               },
-            };
-            const actor = GRAASP_ACTOR;
-            await fn(item, actor, { log: undefined });
-            expect(createMock).toHaveBeenCalledTimes(4);
-            done();
-          }
-        });
-
-        build(buildAppOptions(buildLocalOptions()));
+            },
+          };
+          const actor = GRAASP_ACTOR;
+          await fn(item, actor, { log: undefined });
+          expect(createMock).toHaveBeenCalledTimes(4);
+        }
       });
+
+      build(buildAppOptions(buildLocalOptions()));
     });
-    it.each(FILE_SERVICES)(
-      '%s : Run post hook only for file items',
-      (service) => {
-        const createMock = jest
-          .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
-          .mockImplementation(() => new MockTask(true));
-
-        mockSetTaskPostHookHandler(runner, async (name, fn) => {
-          if (name === itemTaskManager.getCreateTaskName()) {
-            const item = {
-              id: v4(),
-              type: ItemType.APP,
-              extra: {
-                [ItemType.LOCAL_FILE]: {
-                  mimetype: THUMBNAIL_MIMETYPE,
-                  path: `${ITEM_S3_KEY}/filepath`,
-                },
-              },
-            };
-            const actor = GRAASP_ACTOR;
-            await fn(item, actor, { log: undefined });
-            expect(createMock).toHaveBeenCalledTimes(0);
-          }
-        });
-
-        build(buildAppOptions(buildFileServiceOptions(service)));
-      },
-    );
-    it.each(FILE_SERVICES)(
-      '%s : Run post hook only for image files',
-      async (service) => {
-        const createMock = jest
-          .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
-          .mockImplementation(() => new MockTask(true));
-
-        mockSetTaskPostHookHandler(runner, async (name, fn) => {
-          if (name === itemTaskManager.getCreateTaskName()) {
-            const item = {
-              id: v4(),
-              type: ItemType.APP,
-              extra: {
-                [ItemType.LOCAL_FILE]: {
-                  mimetype: 'txt',
-                  path: `${ITEM_S3_KEY}/filepath`,
-                },
-              },
-            };
-            const actor = GRAASP_ACTOR;
-            await fn(item, actor, { log: undefined });
-            expect(createMock).toHaveBeenCalledTimes(0);
-          }
-        });
-
-        build(buildAppOptions(buildFileServiceOptions(service)));
-      },
-    );
   });
+  it.each(FILE_SERVICES)(
+    '%s : Run post hook only for file items',
+    (service) => {
+      const createMock = jest
+        .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
+        .mockImplementation(() => new MockTask(true));
+
+      mockSetTaskPostHookHandler(runner, async (name, fn) => {
+        if (name === itemTaskManager.getCreateTaskName()) {
+          const item = {
+            id: v4(),
+            type: ItemType.APP,
+            extra: {
+              [ItemType.LOCAL_FILE]: {
+                mimetype: THUMBNAIL_MIMETYPE,
+                path: `${ITEM_S3_KEY}/filepath`,
+              },
+            },
+          };
+          const actor = GRAASP_ACTOR;
+          await fn(item, actor, { log: undefined });
+          expect(createMock).toHaveBeenCalledTimes(0);
+        }
+      });
+
+      build(buildAppOptions(buildFileServiceOptions(service)));
+    },
+  );
+  it.each(FILE_SERVICES)(
+    '%s : Run post hook only for image files',
+    async (service) => {
+      const createMock = jest
+        .spyOn(FileTaskManager.prototype, 'createUploadFileTask')
+        .mockImplementation(() => new MockTask(true));
+
+      mockSetTaskPostHookHandler(runner, async (name, fn) => {
+        if (name === itemTaskManager.getCreateTaskName()) {
+          const item = {
+            id: v4(),
+            type: ItemType.APP,
+            extra: {
+              [ItemType.LOCAL_FILE]: {
+                mimetype: 'txt',
+                path: `${ITEM_S3_KEY}/filepath`,
+              },
+            },
+          };
+          const actor = GRAASP_ACTOR;
+          await fn(item, actor, { log: undefined });
+          expect(createMock).toHaveBeenCalledTimes(0);
+        }
+      });
+
+      build(buildAppOptions(buildFileServiceOptions(service)));
+    },
+  );
 });
