@@ -234,7 +234,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             // DON'T use task runner for file task: this would generate a new transaction
             // which is useless since the file task should not touch the DB at all
             // TODO: replace when the file plugin has been refactored into a proper file service
-            await Promise.all(tasks.map(t => t.run(handler, log)));
+            await Promise.all(tasks.map((t) => t.run(handler, log)));
           } catch (err) {
             log.error(err);
           }
@@ -282,7 +282,8 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             // DON'T use task runner for file task: this would generate a new transaction
             // which is useless since the file task should not touch the DB at all
             // TODO: replace when the file plugin has been refactored into a proper file service
-            await Promise.all(tasks.map((t) => t.run(handler, log)));
+            // DON'T use Promise.all: we want the transaction to succeed even if some thumbnail creation subtask fails
+            await Promise.allSettled(tasks.map((t) => t.run(handler, log)));
           }
         }
       },
