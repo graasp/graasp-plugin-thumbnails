@@ -562,6 +562,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.17.2":
+  version: 7.20.7
+  resolution: "@babel/runtime@npm:7.20.7"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: 4629ce5c46f06cca9cfb9b7fc00d48003335a809888e2b91ec2069a2dcfbfef738480cff32ba81e0b7c290f8918e5c22ddcf2b710001464ee84ba62c7e32a3a3
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.12.13, @babel/template@npm:^7.18.6":
   version: 7.18.6
   resolution: "@babel/template@npm:7.18.6"
@@ -967,19 +976,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graasp/sdk@github:graasp/graasp-sdk":
-  version: 0.1.0
-  resolution: "@graasp/sdk@https://github.com/graasp/graasp-sdk.git#commit=7e3491095507f6dfd129d318a87e6c63f0eb486e"
+"@graasp/sdk@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@graasp/sdk@npm:0.2.0"
   dependencies:
     "@fastify/secure-session": 5.2.0
     aws-sdk: 2.1111.0
-    fastify: ^3.29.1
+    fastify: 3.29.1
     fluent-json-schema: 3.1.0
+    immutable: 4.1.0
     js-cookie: 3.0.1
     qs: 6.11.0
     slonik: 28.1.1
     uuid: 8.3.2
-  checksum: 1fdf3b5c52945769005bb6a83620a09f8995f5d16b2115675a7cf745b2a02e07758b3ed1a77b9357b0a9d6ab984e5427a18e4a5353e04f4d02ce16c2010e9785
+  checksum: 95a76c69dd4577f8a0eb51197d83fdb5c61c58c1c6a7c895e7ca543d4883603bc7deb534fd5b7bc4f61b5f15cd0b6c403bf165e6a6a4a756707f9ad877961339
   languageName: node
   linkType: hard
 
@@ -989,6 +999,15 @@ __metadata:
   dependencies:
     i18next: 21.6.11
   checksum: 3b9dbb31bb0af97a26da9c96a24ea50fbec8eb67a5795dda742bde2ed50727072dc7aacc1bb2a95770841ca7213f1b6489d5e31a4d1db3688a17b48568f75d03
+  languageName: node
+  linkType: hard
+
+"@graasp/translations@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@graasp/translations@npm:1.2.1"
+  dependencies:
+    i18next: 21.8.1
+  checksum: 24e17531b1023b41773bd97dad93031ee7da914ef712b83cfa1ee20da3a16aa7c4fb5784213398ecc4872b3ef9e79b6696f61876ac6c572cb182e6ea564edfef
   languageName: node
   linkType: hard
 
@@ -3242,7 +3261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:^3.29.1":
+"fastify@npm:3.29.1, fastify@npm:^3.29.1":
   version: 3.29.1
   resolution: "fastify@npm:3.29.1"
   dependencies:
@@ -3651,18 +3670,18 @@ __metadata:
 
 "graasp-plugin-file-item@github:graasp/graasp-plugin-file-item":
   version: 0.1.0
-  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=f311ad8ad3b8e2ad85e1e402fad669d0d5bd06a6"
+  resolution: "graasp-plugin-file-item@https://github.com/graasp/graasp-plugin-file-item.git#commit=35f25c5b90438f659f6b6827ca285f4e480d214b"
   dependencies:
     graasp-file-upload-limiter: "github:graasp/graasp-file-upload-limiter"
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-  checksum: 40ecc01d3aee658f2bc1647d69170b6515efbf9efab961a1cb09d7ae0111f5580784d58d934400e3f3ad76601b93f3a1ec6842d8287034ee7a577e8869e30464
+  checksum: aec4d81f57f2e2b54426fda266f524856275a689cb6cc7a7fd328fe59a64766d07fa29ac7d15ddc5a77c80d7432b32f415e6657b63a3ebf4d72907c0c7f411f5
   languageName: node
   linkType: hard
 
 "graasp-plugin-file@github:graasp/graasp-plugin-file":
   version: 0.1.0
-  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=0381d1b3e271dd185d1708584a9e5e4683446920"
+  resolution: "graasp-plugin-file@https://github.com/graasp/graasp-plugin-file.git#commit=95c3f4f4593f1b24809ae7d13d1fa64bb56ee139"
   dependencies:
     "@fastify/multipart": 6.0.0
     "@graasp/translations": "github:graasp/graasp-translations"
@@ -3671,7 +3690,7 @@ __metadata:
     fs-extra: 10.1.0
     http-status-codes: 2.2.0
     node-fetch: 2.6.7
-  checksum: 64922d616a9f8aa6d67727ef9c12bd6d804d5ac86972c575031535194068895a279b72e6db8b19c4e597a3207d602c8437cd81a2eed016ec812aff38f9c53778
+  checksum: af17f8c9e21c7679da7c3b132ad3475f6be9775f450ae0263b9ff3f7bc8bcc5d9f12b47d94cd93b3a719590b7354fcd8d5245db375169ef1b533492a3f8b2cf7
   languageName: node
   linkType: hard
 
@@ -3692,8 +3711,8 @@ __metadata:
   dependencies:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
-    "@graasp/sdk": "github:graasp/graasp-sdk"
-    "@graasp/translations": "github:graasp/graasp-translations"
+    "@graasp/sdk": 0.2.0
+    "@graasp/translations": 1.2.1
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/eslint": ^8.4.1
     "@types/jest": 27.4.1
@@ -3907,6 +3926,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"i18next@npm:21.8.1":
+  version: 21.8.1
+  resolution: "i18next@npm:21.8.1"
+  dependencies:
+    "@babel/runtime": ^7.17.2
+  checksum: d95da86626356d980c7063f41f2dcb3ce82462a11aa968df10bb87eb19e7fa54a2303643551bfef6276c18e6fb12e8e320f6ff914ff2ad4e0b32ff849150fed0
+  languageName: node
+  linkType: hard
+
 "iconv-lite@npm:0.4.24":
   version: 0.4.24
   resolution: "iconv-lite@npm:0.4.24"
@@ -3943,6 +3971,13 @@ __metadata:
   version: 5.2.0
   resolution: "ignore@npm:5.2.0"
   checksum: 6b1f926792d614f64c6c83da3a1f9c83f6196c2839aa41e1e32dd7b8d174cef2e329d75caabb62cb61ce9dc432f75e67d07d122a037312db7caa73166a1bdb77
+  languageName: node
+  linkType: hard
+
+"immutable@npm:4.1.0":
+  version: 4.1.0
+  resolution: "immutable@npm:4.1.0"
+  checksum: b9bc1f14fb18eb382d48339c064b24a1f97ae4cf43102e0906c0a6e186a27afcd18b55ca4a0b63c98eefb58143e2b5ebc7755a5fb4da4a7ad84b7a6096ac5b13
   languageName: node
   linkType: hard
 
@@ -6082,6 +6117,13 @@ __metadata:
     indent-string: ^4.0.0
     strip-indent: ^3.0.0
   checksum: fa1ef20404a2d399235e83cc80bd55a956642e37dd197b4b612ba7327bf87fa32745aeb4a1634b2bab25467164ab4ed9c15be2c307923dd08b0fe7c52431ae6b
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.13.11":
+  version: 0.13.11
+  resolution: "regenerator-runtime@npm:0.13.11"
+  checksum: 27481628d22a1c4e3ff551096a683b424242a216fee44685467307f14d58020af1e19660bf2e26064de946bad7eff28950eae9f8209d55723e2d9351e632bbb4
   languageName: node
   linkType: hard
 
