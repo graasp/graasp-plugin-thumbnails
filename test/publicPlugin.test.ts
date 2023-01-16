@@ -4,12 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
 import { MemberTaskManager } from '@graasp/sdk';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from '@graasp/test';
 import {
   CannotEditPublicItem,
   CannotEditPublicMember,
   PublicItemTaskManager,
 } from 'graasp-plugin-public';
-import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
 
 import plugin from '../src/publicPlugin';
 import {

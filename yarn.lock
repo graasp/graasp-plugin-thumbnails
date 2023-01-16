@@ -993,6 +993,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graasp/test@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@graasp/test@npm:1.0.2"
+  dependencies:
+    uuid: 8.3.2
+  checksum: 8499abcb6a4d068572c735d6eb312cd6b4b88894e2db9ba723a69fd4c82c82fdb469df9fcd0b0f7089cd71aff2e53c71ff5771a388340527513ca9d63ec6a66d
+  languageName: node
+  linkType: hard
+
 "@graasp/translations@github:graasp/graasp-translations":
   version: 0.1.0
   resolution: "@graasp/translations@https://github.com/graasp/graasp-translations.git#commit=53ab660875df14b801975c94d7d52031caa0de49"
@@ -3712,6 +3721,7 @@ __metadata:
     "@commitlint/cli": 16.2.3
     "@commitlint/config-conventional": 16.2.1
     "@graasp/sdk": 0.2.0
+    "@graasp/test": 1.0.2
     "@graasp/translations": 1.2.1
     "@trivago/prettier-plugin-sort-imports": 3.2.0
     "@types/eslint": ^8.4.1
@@ -3725,7 +3735,6 @@ __metadata:
     graasp-plugin-file: "github:graasp/graasp-plugin-file"
     graasp-plugin-file-item: "github:graasp/graasp-plugin-file-item"
     graasp-plugin-public: "github:graasp/graasp-plugin-public"
-    graasp-test: "github:graasp/graasp-test"
     http-status-codes: 2.2.0
     husky: 7.0.4
     jest: 27.5.1
@@ -3736,15 +3745,6 @@ __metadata:
     uuid: 8.3.2
   languageName: unknown
   linkType: soft
-
-"graasp-test@github:graasp/graasp-test":
-  version: 0.1.0
-  resolution: "graasp-test@https://github.com/graasp/graasp-test.git#commit=3ff1f7951d1c2439f84fab546bf8de60b530bd1c"
-  dependencies:
-    uuid: 8.3.2
-  checksum: aaa3759fe2842de03fdc99011623dced835636fe5e15598c8574b9d526c040615dac3bf06fd351007a07d267493f9cd4e70c14ef35b0b73fb2810f90be4bbae8
-  languageName: node
-  linkType: hard
 
 "graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.0, graceful-fs@npm:^4.2.6, graceful-fs@npm:^4.2.9":
   version: 4.2.9
