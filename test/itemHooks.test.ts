@@ -4,8 +4,8 @@ import path from 'path';
 import { v4 } from 'uuid';
 
 import { ItemType } from '@graasp/sdk';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from '@graasp/test';
 import { FileTaskManager } from 'graasp-plugin-file';
-import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
 
 import plugin from '../src/plugin';
 import { THUMBNAIL_MIMETYPE, THUMBNAIL_SIZES } from '../src/utils/constants';

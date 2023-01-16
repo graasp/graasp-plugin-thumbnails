@@ -143,7 +143,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           // DON'T use task runner for file task: this would generate a new transaction
           // which is useless since the file task should not touch the DB at all
           // TODO: replace when the file plugin has been refactored into a proper file service
-          tasks.forEach((t) => t.run(handler, log));
+          // DON'T use forEach or Promise.all: we want the transaction to succeed even if some thumbnail creation subtask fails
+          // No need to await that they are finished
+          Promise.allSettled(tasks.map((t) => t.run(handler, log)));
         } catch (err) {
           log.error(err);
         }
@@ -172,7 +174,9 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
           // DON'T use task runner for file task: this would generate a new transaction
           // which is useless since the file task should not touch the DB at all
           // TODO: replace when the file plugin has been refactored into a proper file service
-          tasks.forEach((t) => t.run(handler, log));
+          // DON'T use forEach or Promise.all: we want the transaction to succeed even if some thumbnail creation subtask fails
+          // No need to await that they are finished
+          Promise.allSettled(tasks.map((t) => t.run(handler, log)));
         } catch (err) {
           log.error(err);
         }
@@ -282,7 +286,7 @@ const plugin: FastifyPluginAsync<GraaspThumbnailsOptions> = async (
             // DON'T use task runner for file task: this would generate a new transaction
             // which is useless since the file task should not touch the DB at all
             // TODO: replace when the file plugin has been refactored into a proper file service
-            // DON'T use Promise.all: we want the transaction to succeed even if some thumbnail creation subtask fails
+            // DON'T use forEach or Promise.all: we want the transaction to succeed even if some thumbnail creation subtask fails
             await Promise.allSettled(tasks.map((t) => t.run(handler, log)));
           }
         }

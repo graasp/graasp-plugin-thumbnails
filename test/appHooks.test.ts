@@ -3,8 +3,8 @@ import { v4 } from 'uuid';
 import { FastifyLoggerInstance } from 'fastify';
 
 import { ItemType } from '@graasp/sdk';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from '@graasp/test';
 import { FileTaskManager } from 'graasp-plugin-file';
-import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
 
 import plugin from '../src/plugin';
 import build from './app';

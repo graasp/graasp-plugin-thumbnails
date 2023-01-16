@@ -3,7 +3,7 @@ import fs, { createReadStream } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { ItemTaskManager, Task as MockTask, TaskRunner } from 'graasp-test';
+import { ItemTaskManager, Task as MockTask, TaskRunner } from '@graasp/test';
 
 import plugin from '../src/index';
 import { THUMBNAIL_SIZES } from '../src/utils/constants';

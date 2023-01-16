@@ -3,8 +3,8 @@ import { Server } from 'http';
 import fastify, { FastifyInstance, FastifyPluginAsync } from 'fastify';
 
 import { DatabaseTransactionHandler, MemberTaskManager } from '@graasp/sdk';
+import { ItemTaskManager, TaskRunner } from '@graasp/test';
 import { PublicItemTaskManager } from 'graasp-plugin-public';
-import { ItemTaskManager, TaskRunner } from 'graasp-test';
 
 import { GRAASP_ACTOR } from './constants';
 
